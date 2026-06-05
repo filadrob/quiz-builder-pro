@@ -36,11 +36,13 @@ function ResultsPage() {
   const totalTime = session.answers.reduce((s, a) => s + a.responseTime, 0);
   const groupCode = session.privateGroupCode ?? undefined;
 
-  const goToLeaderboard = (submittedName?: string) => {
+  const goToLeaderboard = (opts?: { submittedName?: string; includeGroup?: boolean }) => {
+    const includeGroup = opts?.includeGroup ?? true;
+    const submittedName = opts?.submittedName;
     navigate({
       to: "/quiz/$quizId/leaderboard",
       params: { quizId },
-      search: groupCode ? { group: groupCode } : {},
+      search: includeGroup && groupCode ? { group: groupCode } : {},
       state: ((prev: Record<string, unknown>) => ({
         ...prev,
         ...(submittedName
