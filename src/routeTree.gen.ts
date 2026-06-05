@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as QuizQuizIdRouteImport } from './routes/quiz.$quizId'
 import { Route as QuizQuizIdIndexRouteImport } from './routes/quiz.$quizId.index'
 import { Route as QuizQuizIdResultsRouteImport } from './routes/quiz.$quizId.results'
 import { Route as QuizQuizIdPlayRouteImport } from './routes/quiz.$quizId.play'
 
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const QuizQuizIdPlayRoute = QuizQuizIdPlayRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/quiz/$quizId': typeof QuizQuizIdRouteWithChildren
   '/quiz/$quizId/play': typeof QuizQuizIdPlayRoute
   '/quiz/$quizId/results': typeof QuizQuizIdResultsRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/quiz/$quizId/play': typeof QuizQuizIdPlayRoute
   '/quiz/$quizId/results': typeof QuizQuizIdResultsRoute
   '/quiz/$quizId': typeof QuizQuizIdIndexRoute
@@ -57,6 +65,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/quiz/$quizId': typeof QuizQuizIdRouteWithChildren
   '/quiz/$quizId/play': typeof QuizQuizIdPlayRoute
   '/quiz/$quizId/results': typeof QuizQuizIdResultsRoute
@@ -66,15 +75,22 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/quiz/$quizId'
     | '/quiz/$quizId/play'
     | '/quiz/$quizId/results'
     | '/quiz/$quizId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/quiz/$quizId/play' | '/quiz/$quizId/results' | '/quiz/$quizId'
+  to:
+    | '/'
+    | '/admin'
+    | '/quiz/$quizId/play'
+    | '/quiz/$quizId/results'
+    | '/quiz/$quizId'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/quiz/$quizId'
     | '/quiz/$quizId/play'
     | '/quiz/$quizId/results'
@@ -83,11 +99,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   QuizQuizIdRoute: typeof QuizQuizIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -144,6 +168,7 @@ const QuizQuizIdRouteWithChildren = QuizQuizIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   QuizQuizIdRoute: QuizQuizIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
