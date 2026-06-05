@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResultsBreakdown } from "@/components/quiz/ResultsBreakdown";
 import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
-import { fetchLeaderboard } from "@/lib/sheets";
-import { submitScore } from "@/lib/leaderboard";
+import { fetchLeaderboard, submitScore } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { Home, RotateCcw, Trophy } from "lucide-react";
 

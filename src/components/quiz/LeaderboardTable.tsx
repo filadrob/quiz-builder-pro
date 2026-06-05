@@ -23,13 +23,13 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
         </TableHeader>
         <TableBody>
           {entries.map((e, i) => (
-            <TableRow key={`${e.participantName}-${e.submittedAt}-${i}`}>
+            <TableRow key={`${e.name}-${e.timestamp}-${i}`}>
               <TableCell className="font-semibold">{i + 1}</TableCell>
-              <TableCell>{e.participantName || "Anonymous"}</TableCell>
-              <TableCell className="text-right tabular-nums">{e.totalScore}</TableCell>
+              <TableCell>{e.isAnonymous ? "Anonymous" : e.name || "Anonymous"}</TableCell>
+              <TableCell className="text-right tabular-nums">{e.score}</TableCell>
               <TableCell className="text-right tabular-nums">{e.totalTime.toFixed(1)}s</TableCell>
               <TableCell className="hidden text-right text-muted-foreground md:table-cell">
-                {formatDate(e.submittedAt)}
+                {formatDate(e.timestamp)}
               </TableCell>
             </TableRow>
           ))}
