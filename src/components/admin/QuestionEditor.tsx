@@ -6,6 +6,7 @@ import { ChoiceEditor } from "./ChoiceEditor";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import type { Choice, Question } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { isVideoUrl } from "@/lib/image";
 
 interface Props {
   question: Question;
