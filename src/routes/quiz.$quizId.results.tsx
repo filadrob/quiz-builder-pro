@@ -115,6 +115,11 @@ function ResultsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Anonymous"
                 />
+                {session.privateGroupCode && (
+                  <p className="text-sm text-muted-foreground">
+                    Your score will appear on both your private group leaderboard and the public leaderboard.
+                  </p>
+                )}
                 {submitError && (
                   <p className="text-sm text-destructive">{submitError}</p>
                 )}
