@@ -117,7 +117,20 @@ function ResultsPage() {
         </Card>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold">Leaderboard</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold">Leaderboard</h2>
+            {session.privateGroupCode && (
+              <Button asChild size="sm" variant="outline">
+                <Link
+                  to="/quiz/$quizId/leaderboard"
+                  params={{ quizId }}
+                  search={{ group: session.privateGroupCode }}
+                >
+                  View group leaderboard ({session.privateGroupCode})
+                </Link>
+              </Button>
+            )}
+          </div>
           {lbQuery.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
           {lbQuery.isError && (
             <p className="text-sm text-destructive">Couldn't load leaderboard.</p>
