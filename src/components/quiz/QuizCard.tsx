@@ -25,6 +25,13 @@ export function QuizCard({ quiz }: { quiz: QuizIndexEntry }) {
             Start quiz
           </Link>
         </Button>
+        <Link
+          to="/quiz/$quizId/leaderboard"
+          params={{ quizId: quiz.id }}
+          className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          View leaderboard
+        </Link>
       </CardContent>
     </Card>
   );
