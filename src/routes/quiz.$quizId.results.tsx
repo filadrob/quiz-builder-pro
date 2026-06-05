@@ -55,7 +55,10 @@ function ResultsPage() {
         privateGroupCode: session.privateGroupCode ?? undefined,
       });
       setSubmitted(true);
-      setTimeout(() => lbQuery.refetch(), 1500);
+      // Refetch immediately; don't gate the UI on its result.
+      lbQuery.refetch().catch(() => {
+        /* leaderboard refresh is best-effort */
+      });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
@@ -95,7 +98,9 @@ function ResultsPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {submitted ? (
-              <p className="text-sm text-emerald-600">Score submitted! Refreshing leaderboard…</p>
+              <p className="text-sm text-emerald-600">
+                Score submitted! See the leaderboard below.
+              </p>
             ) : (
               <>
                 <Label htmlFor="lbname">Display name</Label>
