@@ -1,0 +1,33 @@
+{
+  "id": "quiz-001",
+  "title": "Test Quiz",
+  "description": "A test quiz to verify the data layer.",
+  "timeLimitSeconds": 20,
+  "isModified": false,
+  "questions": [
+    {
+      "id": "q1",
+      "imageUrl": "https://placehold.co/600x400",
+      "textFallback": "Test question one",
+      "choices": [
+        { "type": "text", "value": "Answer A" },
+        { "type": "text", "value": "Answer B" },
+        { "type": "text", "value": "Answer C" },
+        { "type": "text", "value": "Answer D" }
+      ],
+      "correctChoiceIndex": 0
+    },
+    {
+      "id": "q2",
+      "imageUrl": "https://placehold.co/600x400",
+      "textFallback": "Test question two",
+      "choices": [
+        { "type": "text", "value": "Answer A" },
+        { "type": "text", "value": "Answer B" },
+        { "type": "text", "value": "Answer C" },
+        { "type": "text", "value": "Answer D" }
+      ],
+      "correctChoiceIndex": 2
+    }
+  ]
+}
