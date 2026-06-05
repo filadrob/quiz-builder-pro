@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timer } from "./Timer";
-import { preloadImage } from "@/lib/image";
+import { preloadImage, isVideoUrl } from "@/lib/image";
 import { computePoints } from "@/lib/scoring";
 import type { AnswerRecord, Question } from "@/lib/types";
 import { cn } from "@/lib/utils";
