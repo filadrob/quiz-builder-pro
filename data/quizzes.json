@@ -1,0 +1,11 @@
+[
+  {
+    "id": "quiz-001",
+    "title": "Test Quiz",
+    "description": "A test quiz to verify the data layer.",
+    "questionCount": 2,
+    "timeLimitSeconds": 20,
+    "status": "published",
+    "isModified": false
+  }
+]
