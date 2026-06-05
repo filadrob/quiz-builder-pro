@@ -69,10 +69,22 @@ export function QuestionEditor({ question, index, total, onChange, onRemove, onM
               setImgError(false);
               onChange({ ...question, imageUrl: e.target.value });
             }}
-            placeholder="https://example.com/image.jpg"
+            placeholder="https://example.com/image.jpg, .png, .gif, .webm"
             className={cn(imgError && "border-destructive")}
           />
-          {question.imageUrl && (
+          {question.imageUrl && isVideoUrl(question.imageUrl) && (
+            <video
+              src={question.imageUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="max-h-48 w-auto rounded border object-contain"
+              onError={() => setImgError(true)}
+              onLoadedData={() => setImgError(false)}
+            />
+          )}
+          {question.imageUrl && !isVideoUrl(question.imageUrl) && (
             <img
               src={question.imageUrl}
               alt="Question preview"
@@ -81,7 +93,7 @@ export function QuestionEditor({ question, index, total, onChange, onRemove, onM
               onLoad={() => setImgError(false)}
             />
           )}
-          {imgError && <p className="text-xs text-destructive">Image failed to load.</p>}
+          {imgError && <p className="text-xs text-destructive">Media failed to load.</p>}
         </div>
 
         <div className="flex flex-col gap-2">
