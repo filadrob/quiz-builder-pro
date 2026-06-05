@@ -41,9 +41,12 @@ function ResultsPage() {
       to: "/quiz/$quizId/leaderboard",
       params: { quizId },
       search: groupCode ? { group: groupCode } : {},
-      state: submittedName
-        ? { submittedName, submittedScore: totalScore }
-        : undefined,
+      state: ((prev) => ({
+        ...prev,
+        ...(submittedName
+          ? { submittedName, submittedScore: totalScore }
+          : {}),
+      })) as never,
     });
   };
 
