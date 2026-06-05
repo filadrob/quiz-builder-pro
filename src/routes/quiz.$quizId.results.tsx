@@ -18,6 +18,7 @@ function ResultsPage() {
   const { quizId } = Route.useParams();
   const navigate = useNavigate();
   const session = useQuizSession();
+  useDocumentTitle(session.quiz?.title ? `Your Results – ${session.quiz.title}` : "Your Results – Quiz Platform");
 
   useEffect(() => {
     if (!session.quiz || !session.settings || session.answers.length === 0) {

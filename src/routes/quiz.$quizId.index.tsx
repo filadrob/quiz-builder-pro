@@ -42,6 +42,7 @@ function SetupPage() {
   const [copied, setCopied] = useState(false);
 
   const loading = indexQ.isLoading || quizQ.isLoading;
+  useDocumentTitle(quizQ.data?.title ? `${quizQ.data.title} – Quiz Platform` : "Quiz – Quiz Platform");
 
   const handleGenerate = () => {
     const code = generateGroupCode();

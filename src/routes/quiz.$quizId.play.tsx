@@ -24,6 +24,7 @@ function PlayPage() {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("question");
   const [lastAnswer, setLastAnswer] = useState<AnswerRecord | null>(null);
+  useDocumentTitle(session.quiz?.title ? `${session.quiz.title} – Playing` : "Playing – Quiz Platform");
 
   const orderedQuestions = useMemo(() => {
     if (!session.quiz) return [];

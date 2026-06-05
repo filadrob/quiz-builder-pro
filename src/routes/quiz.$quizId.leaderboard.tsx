@@ -50,6 +50,7 @@ function LeaderboardPage() {
     queryKey: ["quiz", quizId],
     queryFn: () => fetchQuiz(quizId),
   });
+  useDocumentTitle(quizQ.data?.title ? `Leaderboard – ${quizQ.data.title}` : "Leaderboard – Quiz Platform");
 
   // Private (group-filtered) leaderboard if group code present
   const privateLB = useQuery({
