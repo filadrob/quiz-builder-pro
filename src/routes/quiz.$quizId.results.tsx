@@ -36,11 +36,13 @@ function ResultsPage() {
   const totalTime = session.answers.reduce((s, a) => s + a.responseTime, 0);
   const groupCode = session.privateGroupCode ?? undefined;
 
-  const goToLeaderboard = (submittedName?: string) => {
+  const goToLeaderboard = (opts?: { submittedName?: string; includeGroup?: boolean }) => {
+    const includeGroup = opts?.includeGroup ?? true;
+    const submittedName = opts?.submittedName;
     navigate({
       to: "/quiz/$quizId/leaderboard",
       params: { quizId },
-      search: groupCode ? { group: groupCode } : {},
+      search: includeGroup && groupCode ? { group: groupCode } : {},
       state: ((prev: Record<string, unknown>) => ({
         ...prev,
         ...(submittedName
@@ -65,7 +67,7 @@ function ResultsPage() {
         privateGroupCode: groupCode,
       });
       setSubmitted(true);
-      goToLeaderboard(finalName);
+      goToLeaderboard({ submittedName: finalName });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
@@ -139,9 +141,16 @@ function ResultsPage() {
                 </div>
               </>
             )}
-            <Button variant="ghost" size="sm" onClick={() => goToLeaderboard()}>
-              View leaderboard
-            </Button>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {groupCode && (
+                <Button variant="secondary" size="sm" onClick={() => goToLeaderboard({ includeGroup: true })}>
+                  View group leaderboard ({groupCode})
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => goToLeaderboard({ includeGroup: false })}>
+                View public leaderboard
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </main>
