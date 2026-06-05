@@ -1,61 +1,93 @@
-import { SHEETS_API_KEY, QUIZ_INDEX_SHEET_ID, QUIZ_INDEX_RANGE } from "./config";
-import type { QuizIndexEntry, LeaderboardEntry } from "./types";
+import { QUIZ_DATA_BASE_URL, GAS_ENDPOINT } from "./config";
 
-const SHEETS_BASE = "https://sheets.googleapis.com/v4/spreadsheets";
+// --- Types ---
 
-interface ValuesResponse {
-  range?: string;
-  majorDimension?: string;
-  values?: string[][];
+export type QuizSummary = {
+  id: string;
+  title: string;
+  description: string;
+  questionCount: number;
+  timeLimitSeconds: number;
+  status: "draft" | "published" | "archived";
+  isModified?: boolean;
+};
+
+export type Choice = {
+  type: "text" | "image";
+  value: string;
+};
+
+export type Question = {
+  id: string;
+  imageUrl: string;
+  textFallback: string;
+  choices: Choice[];
+  correctChoiceIndex: number;
+};
+
+export type Quiz = {
+  id: string;
+  title: string;
+  description: string;
+  timeLimitSeconds: number;
+  isModified?: boolean;
+  questions: Question[];
+};
+
+export type LeaderboardEntry = {
+  name: string;
+  score: number;
+  totalTime: number;
+  timestamp: string;
+  isAnonymous: boolean;
+};
+
+export type ScoreSubmission = {
+  quizId: string;
+  name: string;
+  isAnonymous: boolean;
+  score: number;
+  totalTime: number;
+  privateGroupCode?: string;
+};
+
+// --- Quiz Index ---
+
+export async function fetchQuizIndex(): Promise<QuizSummary[]> {
+  const res = await fetch(`${QUIZ_DATA_BASE_URL}/quizzes.json`);
+  if (!res.ok) throw new Error(`Failed to fetch quiz index: ${res.status}`);
+  const data: QuizSummary[] = await res.json();
+  return data.filter((q) => q.status === "published");
 }
 
-async function fetchRange(sheetId: string, range: string): Promise<string[][]> {
-  const url = `${SHEETS_BASE}/${sheetId}/values/${range}?key=${SHEETS_API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Sheets API ${res.status}: ${text || res.statusText}`);
-  }
-  const data = (await res.json()) as ValuesResponse;
-  return data.values ?? [];
+// --- Individual Quiz ---
+
+export async function fetchQuiz(quizId: string): Promise<Quiz> {
+  const res = await fetch(`${QUIZ_DATA_BASE_URL}/${quizId}.json`);
+  if (!res.ok) throw new Error(`Failed to fetch quiz ${quizId}: ${res.status}`);
+  return res.json();
 }
 
-export async function fetchQuizIndex(): Promise<QuizIndexEntry[]> {
-  const rows = await fetchRange(QUIZ_INDEX_SHEET_ID, QUIZ_INDEX_RANGE);
-  return rows
-    .filter((r) => r[0] && r[5])
-    .map((r) => ({
-      id: String(r[0] ?? "").trim(),
-      title: String(r[1] ?? "").trim(),
-      description: String(r[2] ?? "").trim(),
-      questionCount: Number(r[3] ?? 0) || 0,
-      timeLimitSeconds: Number(r[4] ?? 0) || 0,
-      jsonUrl: String(r[5] ?? "").trim(),
-    }));
+// --- Leaderboard Read ---
+
+export async function fetchLeaderboard(
+  quizId: string,
+  groupCode?: string,
+): Promise<LeaderboardEntry[]> {
+  const params = new URLSearchParams({ quizId });
+  if (groupCode) params.set("groupCode", groupCode);
+  const res = await fetch(`${GAS_ENDPOINT}?${params.toString()}`);
+  if (!res.ok) throw new Error(`Failed to fetch leaderboard: ${res.status}`);
+  return res.json();
 }
 
-export async function fetchLeaderboard(quizId: string): Promise<LeaderboardEntry[]> {
-  // Leaderboard rows live in a tab named exactly after the quiz id in the
-  // SAME spreadsheet as the quiz index. Apps Script writes them there.
-  const range = `'${quizId}'!A2:D`;
-  let rows: string[][] = [];
-  try {
-    rows = await fetchRange(QUIZ_INDEX_SHEET_ID, range);
-  } catch (err) {
-    // Tab may not exist yet — treat as empty leaderboard.
-    if (err instanceof Error && /400|Unable to parse range/i.test(err.message)) {
-      return [];
-    }
-    throw err;
-  }
-  const entries: LeaderboardEntry[] = rows
-    .filter((r) => r.length > 0)
-    .map((r) => ({
-      participantName: String(r[0] ?? "Anonymous"),
-      totalScore: Number(r[1] ?? 0) || 0,
-      totalTime: Number(r[2] ?? 0) || 0,
-      submittedAt: String(r[3] ?? ""),
-    }));
-  entries.sort((a, b) => b.totalScore - a.totalScore || a.totalTime - b.totalTime);
-  return entries;
+// --- Score Write ---
+
+export async function submitScore(submission: ScoreSubmission): Promise<void> {
+  const res = await fetch(GAS_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(submission),
+  });
+  if (!res.ok) throw new Error(`Failed to submit score: ${res.status}`);
 }
