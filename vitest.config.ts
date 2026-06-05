@@ -8,6 +8,10 @@ export default defineConfig({
     globals: true,
     include: ["tests/**/*.test.{ts,tsx}"],
     setupFiles: ["./tests/setup.ts"],
+    env: {
+      VITE_QUIZ_DATA_BASE_URL: "https://example.test/data",
+      VITE_GAS_ENDPOINT: "https://example.test/gas",
+    },
   },
   resolve: {
     alias: {
@@ -15,3 +19,4 @@ export default defineConfig({
     },
   },
 });
+
