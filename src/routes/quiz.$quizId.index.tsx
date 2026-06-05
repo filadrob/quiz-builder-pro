@@ -155,7 +155,7 @@ function SetupPage() {
                 <Label htmlFor="name">Your name</Label>
                 <Input
                   id="name"
-                  placeholder="Enter your name"
+                  placeholder="Enter your name (leave blank to play as Anonymous)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={anonymous}
