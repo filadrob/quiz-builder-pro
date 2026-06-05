@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuizSession } from "@/lib/session-context";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { formatScore } from "@/lib/format";
 import type { AnswerRecord } from "@/lib/types";
 
@@ -23,6 +24,7 @@ function PlayPage() {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("question");
   const [lastAnswer, setLastAnswer] = useState<AnswerRecord | null>(null);
+  useDocumentTitle(session.quiz?.title ? `${session.quiz.title} – Playing` : "Playing – Quiz Platform");
 
   const orderedQuestions = useMemo(() => {
     if (!session.quiz) return [];

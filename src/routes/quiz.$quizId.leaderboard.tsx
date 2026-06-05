@@ -8,6 +8,7 @@ import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
 import { fetchLeaderboard, fetchQuiz, type LeaderboardEntry } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { AlertCircle, AlertTriangle, ArrowLeft, Users } from "lucide-react";
 import { useState } from "react";
 
@@ -49,6 +50,7 @@ function LeaderboardPage() {
     queryKey: ["quiz", quizId],
     queryFn: () => fetchQuiz(quizId),
   });
+  useDocumentTitle(quizQ.data?.title ? `Leaderboard – ${quizQ.data.title}` : "Leaderboard – Quiz Platform");
 
   // Private (group-filtered) leaderboard if group code present
   const privateLB = useQuery({
