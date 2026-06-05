@@ -34,6 +34,7 @@ function ResultsPage() {
   const [name, setName] = useState(session.settings?.participantName ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [skipped, setSkipped] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!session.quiz || !session.settings || session.answers.length === 0) return null;
@@ -101,6 +102,10 @@ function ResultsPage() {
               <p className="text-sm text-emerald-600">
                 Score submitted! See the leaderboard below.
               </p>
+            ) : skipped ? (
+              <p className="text-sm text-muted-foreground">
+                Score not submitted.
+              </p>
             ) : (
               <>
                 <Label htmlFor="lbname">Display name</Label>
@@ -113,9 +118,18 @@ function ResultsPage() {
                 {submitError && (
                   <p className="text-sm text-destructive">{submitError}</p>
                 )}
-                <Button onClick={handleSubmit} disabled={submitting}>
-                  {submitting ? "Submitting…" : "Submit my score"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? "Submitting…" : "Submit my score"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={submitting}
+                    onClick={() => setSkipped(true)}
+                  >
+                    Skip
+                  </Button>
+                </div>
               </>
             )}
           </CardContent>
