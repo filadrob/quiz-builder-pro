@@ -34,8 +34,50 @@ function SetupPage() {
   const [name, setName] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [feedback, setFeedback] = useState(true);
+  const [groupCode, setGroupCodeLocal] = useState<string>("");
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [joinInput, setJoinInput] = useState("");
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const loading = indexQ.isLoading || quizQ.isLoading;
+
+  const handleGenerate = () => {
+    const code = generateGroupCode();
+    setGeneratedCode(code);
+    setGroupCodeLocal(code);
+    setJoinInput("");
+    setJoinError(null);
+  };
+
+  const handleCopy = async () => {
+    if (!generatedCode) return;
+    try {
+      await navigator.clipboard.writeText(generatedCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleJoin = () => {
+    const normalized = normalizeGroupCode(joinInput);
+    if (!isValidGroupCode(normalized)) {
+      setJoinError("Enter a valid 6-character code (letters and numbers).");
+      return;
+    }
+    setJoinError(null);
+    setGeneratedCode(null);
+    setGroupCodeLocal(normalized);
+  };
+
+  const handleClearGroup = () => {
+    setGroupCodeLocal("");
+    setGeneratedCode(null);
+    setJoinInput("");
+    setJoinError(null);
+  };
 
   const handleStart = () => {
     if (!quizQ.data) return;
@@ -46,6 +88,7 @@ function SetupPage() {
       isAnonymous: anonymous,
       perQuestionFeedback: feedback,
     });
+    session.setPrivateGroupCode(groupCode || null);
     const order = shuffle(quizQ.data.questions).map((q) => q.id);
     session.setOrder(order);
     navigate({ to: "/quiz/$quizId/play", params: { quizId } });
