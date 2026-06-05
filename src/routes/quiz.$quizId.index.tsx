@@ -183,6 +183,76 @@ function SetupPage() {
                 <Switch id="fb" checked={feedback} onCheckedChange={setFeedback} />
               </div>
 
+              <div className="flex flex-col gap-3 rounded-md border p-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Private group (optional)</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Play with friends on a private leaderboard. Generate a code to share, or join one.
+                </p>
+
+                {groupCode ? (
+                  <div className="flex flex-col gap-2 rounded-md bg-secondary p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <div className="text-xs text-muted-foreground">
+                          {generatedCode ? "Your group code" : "Joining group"}
+                        </div>
+                        <div className="font-mono text-xl font-semibold tracking-widest">
+                          {groupCode}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {generatedCode && (
+                          <Button size="sm" variant="outline" onClick={handleCopy} aria-label="Copy code">
+                            {copied ? (
+                              <>
+                                <Check className="mr-1 h-4 w-4" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="mr-1 h-4 w-4" /> Copy
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" onClick={handleClearGroup}>
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <Button type="button" variant="outline" onClick={handleGenerate}>
+                      Generate group code
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs text-muted-foreground">or join</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter 6-char code"
+                        value={joinInput}
+                        onChange={(e) => {
+                          setJoinInput(e.target.value);
+                          if (joinError) setJoinError(null);
+                        }}
+                        maxLength={8}
+                        className="font-mono uppercase tracking-widest"
+                      />
+                      <Button type="button" variant="secondary" onClick={handleJoin}>
+                        Join
+                      </Button>
+                    </div>
+                    {joinError && <p className="text-xs text-destructive">{joinError}</p>}
+                  </div>
+                )}
+              </div>
+
               <Button size="lg" disabled={!canStart} onClick={handleStart}>
                 Start quiz
               </Button>
