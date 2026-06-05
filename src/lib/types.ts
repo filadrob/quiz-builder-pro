@@ -2,7 +2,6 @@
 // Re-exported here for backwards compatibility with existing imports.
 export type {
   Choice,
-  ChoiceType,
   Question,
   Quiz,
   QuizSummary,
@@ -10,8 +9,10 @@ export type {
   ScoreSubmission,
 } from "./sheets";
 
-// Local alias retained for older call sites.
 export type ChoiceType = "text" | "image";
+
+// Backwards-compatible alias; prefer QuizSummary.
+export type { QuizSummary as QuizIndexEntry } from "./sheets";
 
 // Per-question answer record collected during a session.
 export interface AnswerRecord {
