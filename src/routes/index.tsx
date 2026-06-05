@@ -9,9 +9,9 @@ import { AlertCircle, Trophy } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Flashcard Quizzes" },
+      { title: "Quiz Platform" },
       { name: "description", content: "Image-based multiple-choice quizzes. Pick a quiz and play." },
-      { property: "og:title", content: "Flashcard Quizzes" },
+      { property: "og:title", content: "Quiz Platform" },
       { property: "og:description", content: "Image-based multiple-choice quizzes." },
     ],
   }),
