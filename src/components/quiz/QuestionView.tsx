@@ -113,7 +113,21 @@ export function QuestionView({
             </Button>
           </div>
         )}
-        {!imageError && (
+        {!imageError && isVideoUrl(question.imageUrl) && (
+          <video
+            src={question.imageUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls={false}
+            className={cn(
+              "block h-auto max-h-[60vh] w-full object-contain transition-opacity",
+              imageReady ? "opacity-100" : "opacity-0 absolute inset-0",
+            )}
+          />
+        )}
+        {!imageError && !isVideoUrl(question.imageUrl) && (
           <img
             src={question.imageUrl}
             alt="Question"
