@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchQuizIndex } from "@/lib/sheets";
-import { fetchQuiz } from "@/lib/quiz-loader";
+import { fetchQuizIndex, fetchQuiz } from "@/lib/sheets";
 import { shuffle } from "@/lib/shuffle";
 import { useQuizSession } from "@/lib/session-context";
 import { ArrowLeft } from "lucide-react";
@@ -26,9 +25,9 @@ function SetupPage() {
   const entry = indexQ.data?.find((q) => q.id === quizId);
 
   const quizQ = useQuery({
-    queryKey: ["quiz", quizId, entry?.jsonUrl],
-    queryFn: () => fetchQuiz(entry!.jsonUrl),
-    enabled: !!entry?.jsonUrl,
+    queryKey: ["quiz", quizId],
+    queryFn: () => fetchQuiz(quizId),
+    enabled: !!entry,
   });
 
   const [name, setName] = useState("");
@@ -43,7 +42,7 @@ function SetupPage() {
     session.setQuiz(quizQ.data);
     session.setSettings({
       participantName,
-      anonymous,
+      isAnonymous: anonymous,
       perQuestionFeedback: feedback,
     });
     const order = shuffle(quizQ.data.questions).map((q) => q.id);

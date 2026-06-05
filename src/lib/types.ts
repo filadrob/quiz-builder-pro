@@ -1,41 +1,20 @@
+// Domain types now live in src/lib/sheets.ts (alongside the fetchers).
+// Re-exported here for backwards compatibility with existing imports.
+export type {
+  Choice,
+  Question,
+  Quiz,
+  QuizSummary,
+  LeaderboardEntry,
+  ScoreSubmission,
+} from "./sheets";
+
 export type ChoiceType = "text" | "image";
 
-export interface Choice {
-  type: ChoiceType;
-  value: string;
-}
+// Backwards-compatible alias; prefer QuizSummary.
+export type { QuizSummary as QuizIndexEntry } from "./sheets";
 
-export interface Question {
-  id: string;
-  imageUrl: string;
-  choices: Choice[];
-  correctChoiceIndex: number;
-}
-
-export interface Quiz {
-  id: string;
-  title: string;
-  description: string;
-  timeLimitSeconds: number;
-  questions: Question[];
-}
-
-export interface QuizIndexEntry {
-  id: string;
-  title: string;
-  description: string;
-  questionCount: number;
-  timeLimitSeconds: number;
-  jsonUrl: string;
-}
-
-export interface LeaderboardEntry {
-  participantName: string;
-  totalScore: number;
-  totalTime: number;
-  submittedAt: string;
-}
-
+// Per-question answer record collected during a session.
 export interface AnswerRecord {
   questionId: string;
   selectedChoiceIndex: number | null; // null = timeout/skip
