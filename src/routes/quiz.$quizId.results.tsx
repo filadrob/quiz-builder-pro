@@ -55,7 +55,10 @@ function ResultsPage() {
         privateGroupCode: session.privateGroupCode ?? undefined,
       });
       setSubmitted(true);
-      setTimeout(() => lbQuery.refetch(), 1500);
+      // Refetch immediately; don't gate the UI on its result.
+      lbQuery.refetch().catch(() => {
+        /* leaderboard refresh is best-effort */
+      });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
