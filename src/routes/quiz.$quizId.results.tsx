@@ -141,9 +141,16 @@ function ResultsPage() {
                 </div>
               </>
             )}
-            <Button variant="ghost" size="sm" onClick={() => goToLeaderboard()}>
-              View leaderboard
-            </Button>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {groupCode && (
+                <Button variant="secondary" size="sm" onClick={() => goToLeaderboard({ includeGroup: true })}>
+                  View group leaderboard ({groupCode})
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => goToLeaderboard({ includeGroup: false })}>
+                View public leaderboard
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </main>
