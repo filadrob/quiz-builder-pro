@@ -94,7 +94,7 @@ function SetupPage() {
     navigate({ to: "/quiz/$quizId/play", params: { quizId } });
   };
 
-  const canStart = !!quizQ.data && (anonymous || name.trim().length > 0);
+  const canStart = !!quizQ.data;
 
   return (
     <div className="min-h-screen bg-background">
