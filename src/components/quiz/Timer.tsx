@@ -38,15 +38,19 @@ export function Timer({ timeLimit, running, onExpire, onTick, resetKey }: TimerP
   }, [running, resetKey]);
 
   const ratio = timeLimit > 0 ? remaining / timeLimit : 0;
-  const color =
-    ratio < 0.25
-      ? "bg-red-500 text-white"
-      : ratio < 0.5
-        ? "bg-amber-500 text-white"
-        : "bg-emerald-500 text-white";
+  const isUrgent = remaining <= 5;
+  const isWarning = remaining <= 10 && remaining > 5;
+  const color = isUrgent
+    ? "bg-red-500 text-white animate-pulse"
+    : isWarning
+      ? "bg-amber-500 text-white"
+      : "bg-emerald-500 text-white";
 
-  const barColor =
-    ratio < 0.25 ? "bg-red-500" : ratio < 0.5 ? "bg-amber-500" : "bg-emerald-500";
+  const barColor = isUrgent
+    ? "bg-red-500"
+    : isWarning
+      ? "bg-amber-500"
+      : "bg-emerald-500";
 
   return (
     <div className="flex flex-col gap-2" aria-live="polite">
