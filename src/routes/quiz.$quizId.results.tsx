@@ -67,7 +67,7 @@ function ResultsPage() {
         privateGroupCode: groupCode,
       });
       setSubmitted(true);
-      goToLeaderboard(finalName);
+      goToLeaderboard({ submittedName: finalName });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
