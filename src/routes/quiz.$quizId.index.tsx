@@ -94,7 +94,7 @@ function SetupPage() {
     navigate({ to: "/quiz/$quizId/play", params: { quizId } });
   };
 
-  const canStart = !!quizQ.data && (anonymous || name.trim().length > 0);
+  const canStart = !!quizQ.data;
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,7 +155,7 @@ function SetupPage() {
                 <Label htmlFor="name">Your name</Label>
                 <Input
                   id="name"
-                  placeholder="Enter your name"
+                  placeholder="Enter your name (leave blank to play as Anonymous)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={anonymous}
