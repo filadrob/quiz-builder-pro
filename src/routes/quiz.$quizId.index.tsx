@@ -42,7 +42,7 @@ function SetupPage() {
     session.setQuiz(quizQ.data);
     session.setSettings({
       participantName,
-      anonymous,
+      isAnonymous: anonymous,
       perQuestionFeedback: feedback,
     });
     const order = shuffle(quizQ.data.questions).map((q) => q.id);

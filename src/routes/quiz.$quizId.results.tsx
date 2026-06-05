@@ -45,11 +45,14 @@ function ResultsPage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const isAnonymous = session.settings?.isAnonymous ?? false;
       await submitScore({
         quizId,
-        participantName: name.trim() || "Anonymous",
-        totalScore,
+        name: isAnonymous ? "Anonymous" : (name.trim() || "Anonymous"),
+        isAnonymous,
+        score: totalScore,
         totalTime: Number(totalTime.toFixed(2)),
+        privateGroupCode: session.privateGroupCode ?? undefined,
       });
       setSubmitted(true);
       setTimeout(() => lbQuery.refetch(), 1500);

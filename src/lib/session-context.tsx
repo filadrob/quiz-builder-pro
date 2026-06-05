@@ -3,7 +3,7 @@ import type { AnswerRecord, Quiz } from "./types";
 
 export interface SessionSettings {
   participantName: string;
-  anonymous: boolean;
+  isAnonymous: boolean;
   perQuestionFeedback: boolean;
 }
 
@@ -12,10 +12,12 @@ interface SessionState {
   settings: SessionSettings | null;
   orderedQuestionIds: string[];
   answers: AnswerRecord[];
+  privateGroupCode: string | null;
   setQuiz: (q: Quiz) => void;
   setSettings: (s: SessionSettings) => void;
   setOrder: (ids: string[]) => void;
   recordAnswer: (a: AnswerRecord) => void;
+  setPrivateGroupCode: (code: string | null) => void;
   reset: () => void;
 }
 
@@ -26,6 +28,7 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SessionSettings | null>(null);
   const [orderedQuestionIds, setOrder] = useState<string[]>([]);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
+  const [privateGroupCode, setPrivateGroupCode] = useState<string | null>(null);
 
   const recordAnswer = (a: AnswerRecord) => setAnswers((prev) => [...prev, a]);
   const reset = () => {
@@ -33,6 +36,7 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
     setSettings(null);
     setOrder([]);
     setAnswers([]);
+    setPrivateGroupCode(null);
   };
 
   return (
@@ -42,10 +46,12 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
         settings,
         orderedQuestionIds,
         answers,
+        privateGroupCode,
         setQuiz,
         setSettings,
         setOrder,
         recordAnswer,
+        setPrivateGroupCode,
         reset,
       }}
     >
