@@ -24,6 +24,7 @@ function emptyQuestion(): Question {
   return {
     id: `q_${rand()}`,
     imageUrl: "",
+    textFallback: "",
     choices: [
       { type: "text", value: "" },
       { type: "text", value: "" },
