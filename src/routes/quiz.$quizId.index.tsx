@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fetchQuizIndex, fetchQuiz } from "@/lib/sheets";
 import { shuffle } from "@/lib/shuffle";
 import { useQuizSession } from "@/lib/session-context";
-import { ArrowLeft } from "lucide-react";
+import { generateGroupCode, isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
+import { ArrowLeft, Copy, Check, Users } from "lucide-react";
 
 export const Route = createFileRoute("/quiz/$quizId/")({
   component: SetupPage,
