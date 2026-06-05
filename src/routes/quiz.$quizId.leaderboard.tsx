@@ -1,16 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
-import { fetchLeaderboard, fetchQuizIndex } from "@/lib/sheets";
+import { fetchLeaderboard, fetchQuiz, type LeaderboardEntry } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
-import { ArrowLeft, Users } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowLeft, Users } from "lucide-react";
 import { useState } from "react";
 
 type Search = { group?: string };
+type LocationState = { submittedName?: string; submittedScore?: number };
 
 export const Route = createFileRoute("/quiz/$quizId/leaderboard")({
   validateSearch: (raw: Record<string, unknown>): Search => {
@@ -20,14 +22,33 @@ export const Route = createFileRoute("/quiz/$quizId/leaderboard")({
   component: LeaderboardPage,
 });
 
+function findRank(entries: LeaderboardEntry[], name: string, score: number): number | null {
+  const target = name || "Anonymous";
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const display = e.isAnonymous ? "Anonymous" : e.name || "Anonymous";
+    if (display === target && e.score === score) return i + 1;
+  }
+  return null;
+}
+
 function LeaderboardPage() {
   const { quizId } = Route.useParams();
   const { group } = Route.useSearch();
   const navigate = useNavigate();
   const session = useQuizSession();
+  const locationState = useRouterState({
+    select: (s) => (s.location.state ?? {}) as LocationState,
+  });
+  const highlight =
+    locationState.submittedName !== undefined && locationState.submittedScore !== undefined
+      ? { name: locationState.submittedName, score: locationState.submittedScore }
+      : null;
 
-  const indexQ = useQuery({ queryKey: ["quiz-index"], queryFn: fetchQuizIndex });
-  const quizMeta = indexQ.data?.find((q) => q.id === quizId);
+  const quizQ = useQuery({
+    queryKey: ["quiz", quizId],
+    queryFn: () => fetchQuiz(quizId),
+  });
 
   // Private (group-filtered) leaderboard if group code present
   const privateLB = useQuery({
@@ -36,7 +57,7 @@ function LeaderboardPage() {
     enabled: !!group,
   });
 
-  // Public leaderboard always shown below (so participant can see their rank)
+  // Public leaderboard always shown (and used to compute public rank for group view)
   const publicLB = useQuery({
     queryKey: ["leaderboard", quizId],
     queryFn: () => fetchLeaderboard(quizId),
@@ -59,6 +80,14 @@ function LeaderboardPage() {
     });
   };
 
+  const publicRank =
+    group && highlight && publicLB.data
+      ? findRank(publicLB.data, highlight.name, highlight.score)
+      : null;
+
+  const title = quizQ.data?.title ?? "Leaderboard";
+  const isModified = quizQ.data?.isModified === true;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -68,18 +97,32 @@ function LeaderboardPage() {
               <ArrowLeft className="mr-1 h-4 w-4" /> Quiz
             </Link>
           </Button>
-          <h1 className="truncate font-semibold">
-            {quizMeta?.title ?? "Leaderboard"}
-            {quizMeta?.isModified && (
-              <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                Modified
-              </span>
-            )}
-          </h1>
+          <div className="min-w-0 text-right">
+            <h1 className="truncate font-semibold">{title}</h1>
+            <p className="truncate text-xs text-muted-foreground">
+              {group ? `Private Group: ${group}` : "Public Leaderboard"}
+            </p>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8">
+        {quizQ.isError && (
+          <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+            <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
+            <span>Couldn't load quiz details.</span>
+          </div>
+        )}
+
+        {isModified && (
+          <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              This quiz was modified after some scores were recorded. Results may not be directly comparable.
+            </span>
+          </div>
+        )}
+
         {group ? (
           <section className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -89,13 +132,25 @@ function LeaderboardPage() {
                 <span className="font-mono tracking-widest">{group}</span>
               </h2>
             </div>
-            {privateLB.isLoading && (
-              <p className="text-sm text-muted-foreground">Loading group scores…</p>
-            )}
+            {privateLB.isLoading && <Skeleton className="h-32 w-full" />}
             {privateLB.isError && (
-              <p className="text-sm text-destructive">Couldn't load group leaderboard.</p>
+              <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                <span className="text-destructive">Couldn't load group leaderboard.</span>
+                <Button size="sm" variant="outline" onClick={() => privateLB.refetch()}>
+                  Retry
+                </Button>
+              </div>
             )}
-            {privateLB.data && <LeaderboardTable entries={privateLB.data} />}
+            {privateLB.data && (
+              <LeaderboardTable entries={privateLB.data} highlight={highlight} />
+            )}
+            {highlight && publicLB.data && (
+              <p className="text-sm text-muted-foreground">
+                {publicRank
+                  ? `Your rank on the public leaderboard: #${publicRank} of ${publicLB.data.length}`
+                  : `Your score isn't on the public leaderboard yet.`}
+              </p>
+            )}
           </section>
         ) : (
           <Card>
@@ -149,11 +204,21 @@ function LeaderboardPage() {
           <p className="text-sm text-muted-foreground">
             All players, sorted by score (highest first), with total time as tiebreaker.
           </p>
-          {publicLB.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+          {publicLB.isLoading && <Skeleton className="h-32 w-full" />}
           {publicLB.isError && (
-            <p className="text-sm text-destructive">Couldn't load public leaderboard.</p>
+            <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+              <span className="text-destructive">Couldn't load public leaderboard.</span>
+              <Button size="sm" variant="outline" onClick={() => publicLB.refetch()}>
+                Retry
+              </Button>
+            </div>
           )}
-          {publicLB.data && <LeaderboardTable entries={publicLB.data} />}
+          {publicLB.data && (
+            <LeaderboardTable
+              entries={publicLB.data}
+              highlight={!group ? highlight : null}
+            />
+          )}
         </section>
       </main>
     </div>

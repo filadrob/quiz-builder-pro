@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResultsBreakdown } from "@/components/quiz/ResultsBreakdown";
-import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
-import { fetchLeaderboard, submitScore } from "@/lib/sheets";
+import { submitScore } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { Home, RotateCcw, Trophy } from "lucide-react";
 
@@ -26,11 +24,6 @@ function ResultsPage() {
     }
   }, [session.quiz, session.settings, session.answers.length, navigate, quizId]);
 
-  const lbQuery = useQuery({
-    queryKey: ["leaderboard", quizId],
-    queryFn: () => fetchLeaderboard(quizId),
-  });
-
   const [name, setName] = useState(session.settings?.participantName ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -41,25 +34,38 @@ function ResultsPage() {
 
   const totalScore = session.answers.reduce((s, a) => s + a.points, 0);
   const totalTime = session.answers.reduce((s, a) => s + a.responseTime, 0);
+  const groupCode = session.privateGroupCode ?? undefined;
+
+  const goToLeaderboard = (submittedName?: string) => {
+    navigate({
+      to: "/quiz/$quizId/leaderboard",
+      params: { quizId },
+      search: groupCode ? { group: groupCode } : {},
+      state: ((prev: Record<string, unknown>) => ({
+        ...prev,
+        ...(submittedName
+          ? { submittedName, submittedScore: totalScore }
+          : {}),
+      })) as never,
+    });
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
       const isAnonymous = session.settings?.isAnonymous ?? false;
+      const finalName = isAnonymous ? "Anonymous" : (name.trim() || "Anonymous");
       await submitScore({
         quizId,
-        name: isAnonymous ? "Anonymous" : (name.trim() || "Anonymous"),
+        name: finalName,
         isAnonymous,
         score: totalScore,
         totalTime: Number(totalTime.toFixed(2)),
-        privateGroupCode: session.privateGroupCode ?? undefined,
+        privateGroupCode: groupCode,
       });
       setSubmitted(true);
-      // Refetch immediately; don't gate the UI on its result.
-      lbQuery.refetch().catch(() => {
-        /* leaderboard refresh is best-effort */
-      });
+      goToLeaderboard(finalName);
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
@@ -99,13 +105,9 @@ function ResultsPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {submitted ? (
-              <p className="text-sm text-emerald-600">
-                Score submitted! See the leaderboard below.
-              </p>
+              <p className="text-sm text-emerald-600">Score submitted!</p>
             ) : skipped ? (
-              <p className="text-sm text-muted-foreground">
-                Score not submitted.
-              </p>
+              <p className="text-sm text-muted-foreground">Score not submitted.</p>
             ) : (
               <>
                 <Label htmlFor="lbname">Display name</Label>
@@ -115,7 +117,7 @@ function ResultsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Anonymous"
                 />
-                {session.privateGroupCode && (
+                {groupCode && (
                   <p className="text-sm text-muted-foreground">
                     Your score will appear on both your private group leaderboard and the public leaderboard.
                   </p>
@@ -137,30 +139,11 @@ function ResultsPage() {
                 </div>
               </>
             )}
+            <Button variant="ghost" size="sm" onClick={() => goToLeaderboard()}>
+              View leaderboard
+            </Button>
           </CardContent>
         </Card>
-
-        <section className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Leaderboard</h2>
-            {session.privateGroupCode && (
-              <Button asChild size="sm" variant="outline">
-                <Link
-                  to="/quiz/$quizId/leaderboard"
-                  params={{ quizId }}
-                  search={{ group: session.privateGroupCode }}
-                >
-                  View group leaderboard ({session.privateGroupCode})
-                </Link>
-              </Button>
-            )}
-          </div>
-          {lbQuery.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-          {lbQuery.isError && (
-            <p className="text-sm text-destructive">Couldn't load leaderboard.</p>
-          )}
-          {lbQuery.data && <LeaderboardTable entries={lbQuery.data} />}
-        </section>
       </main>
     </div>
   );
