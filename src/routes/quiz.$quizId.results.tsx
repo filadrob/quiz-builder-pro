@@ -41,7 +41,7 @@ function ResultsPage() {
       to: "/quiz/$quizId/leaderboard",
       params: { quizId },
       search: groupCode ? { group: groupCode } : {},
-      state: ((prev) => ({
+      state: ((prev: Record<string, unknown>) => ({
         ...prev,
         ...(submittedName
           ? { submittedName, submittedScore: totalScore }
