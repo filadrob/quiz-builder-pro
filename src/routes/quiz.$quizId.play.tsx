@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuizSession } from "@/lib/session-context";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { formatScore } from "@/lib/format";
 import type { AnswerRecord } from "@/lib/types";
 

@@ -8,6 +8,7 @@ import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
 import { fetchLeaderboard, fetchQuiz, type LeaderboardEntry } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { AlertCircle, AlertTriangle, ArrowLeft, Users } from "lucide-react";
 import { useState } from "react";
 

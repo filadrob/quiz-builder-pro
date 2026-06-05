@@ -11,6 +11,7 @@ import { fetchQuizIndex, fetchQuiz } from "@/lib/sheets";
 import { shuffle } from "@/lib/shuffle";
 import { useQuizSession } from "@/lib/session-context";
 import { generateGroupCode, isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { ArrowLeft, Copy, Check, Users } from "lucide-react";
 
 export const Route = createFileRoute("/quiz/$quizId/")({
