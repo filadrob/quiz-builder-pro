@@ -98,7 +98,9 @@ function ResultsPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {submitted ? (
-              <p className="text-sm text-emerald-600">Score submitted! Refreshing leaderboard…</p>
+              <p className="text-sm text-emerald-600">
+                Score submitted! See the leaderboard below.
+              </p>
             ) : (
               <>
                 <Label htmlFor="lbname">Display name</Label>
