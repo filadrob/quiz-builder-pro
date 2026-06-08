@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { MakoCharge } from "@/components/mako";
 
 interface TimerProps {
   timeLimit: number;
@@ -37,40 +37,10 @@ export function Timer({ timeLimit, running, onExpire, onTick, resetKey }: TimerP
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, resetKey]);
 
-  const ratio = timeLimit > 0 ? remaining / timeLimit : 0;
-  const isUrgent = remaining <= 5;
-  const isWarning = remaining <= 10 && remaining > 5;
-  const color = isUrgent
-    ? "bg-red-500 text-white animate-pulse"
-    : isWarning
-      ? "bg-amber-500 text-white"
-      : "bg-emerald-500 text-white";
-
-  const barColor = isUrgent
-    ? "bg-red-500"
-    : isWarning
-      ? "bg-amber-500"
-      : "bg-emerald-500";
-
   return (
-    <div className="flex flex-col gap-2" aria-live="polite">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-muted-foreground">Time left</span>
-        <span
-          className={cn(
-            "rounded-md px-2 py-1 text-sm font-semibold tabular-nums transition-colors",
-            color,
-          )}
-        >
-          {remaining.toFixed(1)}s
-        </span>
-      </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn("h-full transition-[width,background-color] duration-100", barColor)}
-          style={{ width: `${Math.max(0, Math.min(100, ratio * 100))}%` }}
-        />
-      </div>
+    <div aria-live="polite">
+      <MakoCharge value={remaining} max={timeLimit} />
+      <span className="sr-only">{remaining.toFixed(1)} seconds remaining</span>
     </div>
   );
 }

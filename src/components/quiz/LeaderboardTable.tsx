@@ -1,7 +1,5 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { LeaderboardEntry } from "@/lib/types";
-import { formatDate, formatScore, formatTime } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatScore, formatTime } from "@/lib/format";
 
 export function LeaderboardTable({
   entries,
@@ -12,50 +10,114 @@ export function LeaderboardTable({
 }) {
   if (!entries.length) {
     return (
-      <p className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
-        No scores yet. Be the first!
-      </p>
+      <div
+        className="clip-mako p-6 text-center text-[11px] tracking-widest"
+        style={{
+          background: 'var(--mako-panel)',
+          boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+          fontFamily: 'var(--font-mono-mako)',
+          color: 'var(--mako-sub)',
+        }}
+      >
+        NO SCORES YET — BE THE FIRST
+      </div>
     );
   }
+
   let highlightedOnce = false;
+
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">#</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead className="text-right">Score</TableHead>
-            <TableHead className="text-right">Time</TableHead>
-            <TableHead className="hidden text-right md:table-cell">Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {entries.map((e, i) => {
-            const displayName = e.isAnonymous ? "Anonymous" : e.name || "Anonymous";
-            const isHighlight =
-              !highlightedOnce &&
-              !!highlight &&
-              displayName === (highlight.name || "Anonymous") &&
-              e.score === highlight.score;
-            if (isHighlight) highlightedOnce = true;
-            return (
-              <TableRow
-                key={`${e.name}-${e.timestamp}-${i}`}
-                className={cn(isHighlight && "bg-amber-100/60 dark:bg-amber-500/10")}
+    <div
+      className="clip-mako overflow-hidden"
+      style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+    >
+      <div
+        className="grid grid-cols-[2.5rem_1fr_auto_auto] gap-3 px-4 py-2 text-[10px] tracking-widest"
+        style={{
+          fontFamily: 'var(--font-mono-mako)',
+          color: 'var(--mako-sub)',
+          background: 'var(--mako-line-soft)',
+          borderBottom: '1px solid var(--mako-line)',
+        }}
+      >
+        <span>RANK</span>
+        <span>NAME</span>
+        <span className="text-right">SCORE</span>
+        <span className="hidden text-right sm:block">TIME</span>
+      </div>
+
+      {entries.map((e, i) => {
+        const displayName = e.isAnonymous ? 'Anonymous' : e.name || 'Anonymous';
+        const isHighlight =
+          !highlightedOnce &&
+          !!highlight &&
+          displayName === (highlight.name || 'Anonymous') &&
+          e.score === highlight.score;
+        if (isHighlight) highlightedOnce = true;
+
+        const rankColor =
+          i === 0 ? 'var(--mako-amber)' :
+          i === 1 ? 'var(--mako-teal)' :
+          i === 2 ? 'var(--mako-magenta)' :
+          'var(--mako-sub)';
+
+        return (
+          <div
+            key={`${e.name}-${e.timestamp}-${i}`}
+            className="grid grid-cols-[2.5rem_1fr_auto_auto] items-center gap-3 px-4 py-3 text-sm"
+            style={{
+              borderBottom: '1px solid var(--mako-line)',
+              background: isHighlight ? 'rgba(70,224,176,.06)' : 'transparent',
+              ...(isHighlight ? { boxShadow: 'inset 3px 0 0 var(--mako-teal)' } : {}),
+            }}
+          >
+            <span
+              className="font-bold text-[13px]"
+              style={{ fontFamily: 'var(--font-mono-mako)', color: rankColor }}
+            >
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-[9px] font-bold"
+                style={{
+                  clipPath: 'polygon(50% 0,100% 50%,50% 100%,0 50%)',
+                  background: rankColor,
+                  color: '#04120d',
+                }}
               >
-                <TableCell className="font-semibold">{i + 1}</TableCell>
-                <TableCell>{displayName}{isHighlight && <span className="ml-2 text-xs text-amber-700 dark:text-amber-400">(you)</span>}</TableCell>
-                <TableCell className="text-right tabular-nums">{formatScore(e.score)}</TableCell>
-                <TableCell className="text-right tabular-nums">{formatTime(e.totalTime)}</TableCell>
-                <TableCell className="hidden text-right text-muted-foreground md:table-cell">
-                  {formatDate(e.timestamp)}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                {displayName[0]?.toUpperCase() ?? '?'}
+              </span>
+              <span
+                className="truncate text-sm"
+                style={{ color: isHighlight ? 'var(--mako-teal)' : 'var(--mako-ink)' }}
+              >
+                {displayName}
+              </span>
+              {isHighlight && (
+                <span
+                  className="shrink-0 text-[9px] tracking-widest"
+                  style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-teal)' }}
+                >
+                  YOU
+                </span>
+              )}
+            </div>
+            <span
+              className="text-right font-bold tabular-nums"
+              style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-amber)' }}
+            >
+              {formatScore(e.score)}
+            </span>
+            <span
+              className="hidden text-right tabular-nums text-xs sm:block"
+              style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+            >
+              {formatTime(e.totalTime)}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

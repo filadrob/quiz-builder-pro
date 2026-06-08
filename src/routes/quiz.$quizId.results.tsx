@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResultsBreakdown } from "@/components/quiz/ResultsBreakdown";
+import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { submitScore } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { useDocumentTitle } from "@/lib/use-document-title";
@@ -47,9 +46,7 @@ function ResultsPage() {
       search: includeGroup && groupCode ? { group: groupCode } : {},
       state: ((prev: Record<string, unknown>) => ({
         ...prev,
-        ...(submittedName
-          ? { submittedName, submittedScore: totalScore }
-          : {}),
+        ...(submittedName ? { submittedName, submittedScore: totalScore } : {}),
       })) as never,
     });
   };
@@ -78,83 +75,129 @@ function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4">
-          <h1 className="truncate font-semibold">{session.quiz.title} — Results</h1>
-          <div className="flex gap-2">
-            <Button asChild size="sm" variant="outline">
-              <Link to="/quiz/$quizId" params={{ quizId }}>
-                <RotateCcw className="mr-1 h-4 w-4" /> Retake
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="ghost">
-              <Link to="/">
-                <Home className="mr-1 h-4 w-4" /> Home
-              </Link>
-            </Button>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
+        <div className="mx-auto flex max-w-3xl items-center gap-3">
+          <MakoBar channel="results" guild={session.quiz.title} className="flex-1" />
+          <div className="flex items-center gap-2">
+            <Link
+              to="/quiz/$quizId"
+              params={{ quizId }}
+              className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+              style={{
+                fontFamily: 'var(--font-ui)',
+                background: 'var(--mako-panel)',
+                boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                color: 'var(--mako-sub)',
+              }}
+            >
+              <RotateCcw className="mr-1 inline h-3 w-3" />Retake
+            </Link>
+            <Link
+              to="/"
+              className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+              style={{
+                fontFamily: 'var(--font-ui)',
+                background: 'var(--mako-panel)',
+                boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                color: 'var(--mako-sub)',
+              }}
+            >
+              <Home className="mr-1 inline h-3 w-3" />Home
+            </Link>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8">
+      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
         <ResultsBreakdown quiz={session.quiz} answers={session.answers} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
+        <MakoPanel className="flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" style={{ color: 'var(--mako-amber)' }} />
+            <span
+              className="text-sm font-bold tracking-widest uppercase"
+              style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-ink)' }}
+            >
               Submit to leaderboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {submitted ? (
-              <p className="text-sm text-emerald-600">Score submitted!</p>
-            ) : skipped ? (
-              <p className="text-sm text-muted-foreground">Score not submitted.</p>
-            ) : (
-              <>
-                <Label htmlFor="lbname">Display name</Label>
+            </span>
+          </div>
+
+          {submitted ? (
+            <p className="text-sm tracking-widest" style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-correct)' }}>
+              SCORE SUBMITTED ✓
+            </p>
+          ) : skipped ? (
+            <p className="text-sm" style={{ color: 'var(--mako-sub)' }}>Score not submitted.</p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label
+                  htmlFor="lbname"
+                  className="text-[11px] tracking-widest uppercase"
+                  style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+                >
+                  Display name
+                </Label>
                 <Input
                   id="lbname"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Anonymous"
+                  className="border-[var(--mako-line)] bg-transparent focus-visible:ring-[var(--mako-teal)]"
+                  style={{ color: 'var(--mako-ink)' }}
                 />
-                {groupCode && (
-                  <p className="text-sm text-muted-foreground">
-                    Your score will appear on both your private group leaderboard and the public leaderboard.
-                  </p>
-                )}
-                {submitError && (
-                  <p className="text-sm text-destructive">{submitError}</p>
-                )}
-                <div className="flex gap-2">
-                  <Button onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? "Submitting…" : "Submit my score"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={submitting}
-                    onClick={() => setSkipped(true)}
-                  >
-                    Skip
-                  </Button>
-                </div>
-              </>
-            )}
-            <div className="flex flex-wrap gap-2 pt-1">
+              </div>
+
               {groupCode && (
-                <Button variant="secondary" size="sm" onClick={() => goToLeaderboard({ includeGroup: true })}>
-                  View group leaderboard ({groupCode})
-                </Button>
+                <p className="text-xs" style={{ color: 'var(--mako-sub)' }}>
+                  Your score will appear on both your private group leaderboard and the public leaderboard.
+                </p>
               )}
-              <Button variant="ghost" size="sm" onClick={() => goToLeaderboard({ includeGroup: false })}>
-                View public leaderboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              {submitError && (
+                <p className="text-sm" style={{ color: 'var(--mako-wrong)' }}>{submitError}</p>
+              )}
+
+              <div className="flex gap-3">
+                <MakoButton
+                  className="flex-1 py-3 text-sm uppercase"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting…" : "Submit my score"}
+                </MakoButton>
+                <MakoButton
+                  variant="secondary"
+                  className="py-3 px-5 text-sm uppercase"
+                  disabled={submitting}
+                  onClick={() => setSkipped(true)}
+                >
+                  Skip
+                </MakoButton>
+              </div>
+            </>
+          )}
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {groupCode && (
+              <MakoButton
+                variant="secondary"
+                className="py-2 px-4 text-xs uppercase"
+                onClick={() => goToLeaderboard({ includeGroup: true })}
+              >
+                Group leaderboard ({groupCode})
+              </MakoButton>
+            )}
+            <MakoButton
+              variant="secondary"
+              className="py-2 px-4 text-xs uppercase"
+              onClick={() => goToLeaderboard({ includeGroup: false })}
+            >
+              Public leaderboard
+            </MakoButton>
+          </div>
+        </MakoPanel>
       </main>
     </div>
   );

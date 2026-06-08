@@ -3,9 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { QuestionView } from "@/components/quiz/QuestionView";
 import { FeedbackInterstitial } from "@/components/quiz/FeedbackInterstitial";
 import { TimesUpInterstitial } from "@/components/quiz/TimesUpInterstitial";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { useQuizSession } from "@/lib/session-context";
 import { useDocumentTitle } from "@/lib/use-document-title";
 import { formatScore } from "@/lib/format";
@@ -33,14 +31,12 @@ function PlayPage() {
       .filter((q): q is NonNullable<typeof q> => !!q);
   }, [session.quiz, session.orderedQuestionIds]);
 
-  // Redirect to setup if session not initialized
   useEffect(() => {
     if (!session.quiz || !session.settings || orderedQuestions.length === 0) {
       navigate({ to: "/quiz/$quizId", params: { quizId } });
     }
   }, [session.quiz, session.settings, orderedQuestions.length, navigate, quizId]);
 
-  // Preload the next question's image during the pause
   useEffect(() => {
     if (phase !== "between") return;
     const upcoming = orderedQuestions[index + 1];
@@ -57,16 +53,11 @@ function PlayPage() {
   const isLastQuestion = index === orderedQuestions.length - 1;
   const feedbackEnabled = session.settings.perQuestionFeedback;
 
-  const goToResults = () => {
-    navigate({ to: "/quiz/$quizId/results", params: { quizId } });
-  };
+  const goToResults = () => navigate({ to: "/quiz/$quizId/results", params: { quizId } });
 
   const finishQuestion = () => {
-    if (isLastQuestion) {
-      goToResults();
-    } else {
-      setPhase("between");
-    }
+    if (isLastQuestion) goToResults();
+    else setPhase("between");
   };
 
   const handleContinue = () => {
@@ -78,38 +69,47 @@ function PlayPage() {
   const handleAnswered = (record: AnswerRecord) => {
     session.recordAnswer(record);
     setLastAnswer(record);
-
     if (record.timedOut) {
       setPhase("timesup");
       setTimeout(finishQuestion, 1200);
       return;
     }
-    if (record.skipped) {
-      finishQuestion();
-      return;
-    }
-    if (feedbackEnabled) {
-      setPhase("feedback");
-    } else {
-      finishQuestion();
-    }
+    if (record.skipped) { finishQuestion(); return; }
+    if (feedbackEnabled) setPhase("feedback");
+    else finishQuestion();
   };
 
   const totalScore = session.answers.reduce((s, a) => s + a.points, 0);
   const completedCount = phase === "question" ? index : index + 1;
-  const progress = (completedCount / orderedQuestions.length) * 100;
+  const progress = completedCount / orderedQuestions.length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto max-w-3xl px-4 py-3">
-          <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span className="truncate font-medium">{session.quiz.title}</span>
-            <span>
-              {Math.min(index + 1, orderedQuestions.length)} / {orderedQuestions.length}
-            </span>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
+        <div className="mx-auto max-w-3xl flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <MakoBar
+              channel={quizId}
+              guild={session.quiz.title}
+              online={Math.min(index + 1, orderedQuestions.length)}
+              className="flex-1"
+            />
+            <ThemeToggle />
           </div>
-          <Progress value={progress} />
+          {/* Progress bar */}
+          <div
+            className="h-[3px] w-full clip-mako overflow-hidden"
+            style={{ background: 'var(--mako-line-soft)' }}
+          >
+            <div
+              className="h-full transition-[width] duration-300"
+              style={{
+                width: `${progress * 100}%`,
+                background: 'linear-gradient(90deg, var(--mako-teal), var(--mako-correct))',
+                boxShadow: '0 0 8px var(--mako-teal)',
+              }}
+            />
+          </div>
         </div>
       </header>
 
@@ -129,6 +129,7 @@ function PlayPage() {
           <FeedbackInterstitial
             correct={lastAnswer.correct}
             points={lastAnswer.points}
+            responseTime={lastAnswer.responseTime}
             onContinue={finishQuestion}
           />
         )}
@@ -164,54 +165,55 @@ function PauseScreen({
   onContinue: () => void;
 }) {
   const showResult = feedbackEnabled && lastAnswer;
-  let resultLine: { icon: string; text: string; className: string } | null = null;
+  let resultColor = 'var(--mako-sub)';
+  let resultText = '';
   if (showResult && lastAnswer) {
     if (lastAnswer.timedOut) {
-      resultLine = {
-        icon: "⏱",
-        text: `Time's Up. +${lastAnswer.points} pts`,
-        className: "text-muted-foreground",
-      };
+      resultColor = 'var(--mako-amber)';
+      resultText = `⏱ TIME'S UP  +${lastAnswer.points} PTS`;
     } else if (lastAnswer.correct) {
-      resultLine = {
-        icon: "✅",
-        text: `Correct! +${lastAnswer.points} pts`,
-        className: "text-emerald-600 dark:text-emerald-400",
-      };
+      resultColor = 'var(--mako-correct)';
+      resultText = `✓ CORRECT  +${lastAnswer.points} PTS`;
     } else {
-      resultLine = {
-        icon: "❌",
-        text: `Incorrect. +${lastAnswer.points} pts`,
-        className: "text-destructive",
-      };
+      resultColor = 'var(--mako-wrong)';
+      resultText = `✗ INCORRECT  +0 PTS`;
     }
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-6 py-10 text-center">
-        <div>
-          <p className="text-sm uppercase tracking-wide text-muted-foreground">
-            Score
-          </p>
-          <p className="text-4xl font-bold tabular-nums">{formatScore(totalScore)}</p>
-        </div>
+    <MakoPanel className="scanlines flex flex-col items-center gap-6 p-10 text-center">
+      <div
+        className="text-[10px] tracking-widest"
+        style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+      >
+        SCORE
+      </div>
+      <div
+        className="text-5xl font-bold tabular-nums"
+        style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-teal)', textShadow: '0 0 16px var(--mako-teal)' }}
+      >
+        {formatScore(totalScore)}
+      </div>
 
-        {resultLine && (
-          <p className={`text-lg font-medium ${resultLine.className}`}>
-            <span className="mr-2">{resultLine.icon}</span>
-            {resultLine.text}
-          </p>
-        )}
-
-        <p className="text-sm text-muted-foreground">
-          Question {completed} of {total} complete
+      {showResult && (
+        <p
+          className="text-sm tracking-widest font-semibold"
+          style={{ fontFamily: 'var(--font-mono-mako)', color: resultColor }}
+        >
+          {resultText}
         </p>
+      )}
 
-        <Button size="lg" onClick={onContinue} autoFocus>
-          Continue
-        </Button>
-      </CardContent>
-    </Card>
+      <p
+        className="text-[11px] tracking-widest"
+        style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+      >
+        QUESTION {completed} OF {total} COMPLETE
+      </p>
+
+      <MakoButton className="w-full max-w-xs py-4 uppercase text-sm" onClick={onContinue} autoFocus>
+        Continue
+      </MakoButton>
+    </MakoPanel>
   );
 }

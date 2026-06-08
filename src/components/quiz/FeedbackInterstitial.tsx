@@ -1,27 +1,54 @@
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { MakoButton } from "@/components/mako";
 
 interface Props {
   correct: boolean;
   points: number;
+  responseTime?: number;
   onContinue: () => void;
 }
 
-export function FeedbackInterstitial({ correct, points, onContinue }: Props) {
+export function FeedbackInterstitial({ correct, points, responseTime, onContinue }: Props) {
+  const accentColor = correct ? 'var(--mako-correct)' : 'var(--mako-wrong)';
+
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border bg-card p-8 text-center">
-      {correct ? (
-        <CheckCircle2 className="h-16 w-16 text-emerald-500" />
-      ) : (
-        <XCircle className="h-16 w-16 text-destructive" />
+    <div
+      className="scanlines flex flex-col items-center gap-6 clip-mako p-8 text-center"
+      style={{ background: 'var(--mako-panel)', boxShadow: `inset 0 0 0 1px var(--mako-line), 0 0 40px ${accentColor}22` }}
+    >
+      <h2
+        className="text-5xl font-bold tracking-widest"
+        style={{
+          fontFamily: 'var(--font-ui)',
+          color: accentColor,
+          textShadow: `0 0 24px ${accentColor}`,
+        }}
+      >
+        {correct ? 'CORRECT' : 'WRONG'}
+      </h2>
+
+      <div
+        className="text-3xl font-bold"
+        style={{
+          fontFamily: 'var(--font-mono-mako)',
+          color: 'var(--mako-amber)',
+          textShadow: '0 0 12px var(--mako-amber)',
+        }}
+      >
+        {correct ? `+${points}` : '+0'} PTS
+      </div>
+
+      {responseTime != null && (
+        <div
+          className="text-[11px] tracking-widest"
+          style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+        >
+          {responseTime.toFixed(2)}s RESPONSE TIME
+        </div>
       )}
-      <h2 className="text-2xl font-bold">{correct ? "Correct!" : "Incorrect"}</h2>
-      <p className="text-muted-foreground">
-        {correct ? `+${points} points` : "0 points"}
-      </p>
-      <Button onClick={onContinue} autoFocus>
-        Continue
-      </Button>
+
+      <MakoButton onClick={onContinue} autoFocus className="w-full max-w-xs uppercase text-sm">
+        Next Round
+      </MakoButton>
     </div>
   );
 }

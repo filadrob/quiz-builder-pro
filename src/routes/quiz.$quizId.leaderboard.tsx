@@ -1,10 +1,9 @@
 import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LeaderboardTable } from "@/components/quiz/LeaderboardTable";
+import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { fetchLeaderboard, fetchQuiz, type LeaderboardEntry } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
 import { isValidGroupCode, normalizeGroupCode } from "@/lib/group-code";
@@ -46,20 +45,15 @@ function LeaderboardPage() {
       ? { name: locationState.submittedName, score: locationState.submittedScore }
       : null;
 
-  const quizQ = useQuery({
-    queryKey: ["quiz", quizId],
-    queryFn: () => fetchQuiz(quizId),
-  });
+  const quizQ = useQuery({ queryKey: ["quiz", quizId], queryFn: () => fetchQuiz(quizId) });
   useDocumentTitle(quizQ.data?.title ? `Leaderboard – ${quizQ.data.title}` : "Leaderboard – Quiz Platform");
 
-  // Private (group-filtered) leaderboard if group code present
   const privateLB = useQuery({
     queryKey: ["leaderboard", quizId, group ?? null],
     queryFn: () => fetchLeaderboard(quizId, group),
     enabled: !!group,
   });
 
-  // Public leaderboard always shown (and used to compute public rank for group view)
   const publicLB = useQuery({
     queryKey: ["leaderboard", quizId],
     queryFn: () => fetchLeaderboard(quizId),
@@ -75,11 +69,7 @@ function LeaderboardPage() {
       return;
     }
     setJoinError(null);
-    navigate({
-      to: "/quiz/$quizId/leaderboard",
-      params: { quizId },
-      search: { group: normalized },
-    });
+    navigate({ to: "/quiz/$quizId/leaderboard", params: { quizId }, search: { group: normalized } });
   };
 
   const publicRank =
@@ -91,35 +81,49 @@ function LeaderboardPage() {
   const isModified = quizQ.data?.isModified === true;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/quiz/$quizId" params={{ quizId }}>
-              <ArrowLeft className="mr-1 h-4 w-4" /> Quiz
-            </Link>
-          </Button>
-          <div className="min-w-0 text-right">
-            <h1 className="truncate font-semibold">{title}</h1>
-            <p className="truncate text-xs text-muted-foreground">
-              {group ? `Private Group: ${group}` : "Public Leaderboard"}
-            </p>
-          </div>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
+        <div className="mx-auto flex max-w-3xl items-center gap-3">
+          <Link
+            to="/quiz/$quizId"
+            params={{ quizId }}
+            className="flex items-center gap-1 clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+            style={{
+              fontFamily: 'var(--font-ui)',
+              background: 'var(--mako-panel)',
+              boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+              color: 'var(--mako-sub)',
+            }}
+          >
+            <ArrowLeft className="h-3 w-3" /> Quiz
+          </Link>
+          <MakoBar
+            channel="leaderboard"
+            guild={title}
+            className="flex-1"
+          />
+          <ThemeToggle />
         </div>
       </header>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-8">
         {quizQ.isError && (
-          <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
-            <span>Couldn't load quiz details.</span>
+          <div
+            className="flex items-start gap-2 clip-mako p-3 text-sm"
+            style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-wrong)' }}
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: 'var(--mako-wrong)' }} />
+            <span style={{ color: 'var(--mako-wrong)' }}>Couldn't load quiz details.</span>
           </div>
         )}
 
         {isModified && (
-          <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>
+          <div
+            className="flex items-start gap-2 clip-mako p-3 text-sm"
+            style={{ background: 'rgba(255,180,84,.06)', boxShadow: 'inset 0 0 0 1px var(--mako-amber)' }}
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: 'var(--mako-amber)' }} />
+            <span style={{ color: 'var(--mako-amber)' }}>
               This quiz was modified after some scores were recorded. Results may not be directly comparable.
             </span>
           </div>
@@ -128,98 +132,121 @@ function LeaderboardPage() {
         {group ? (
           <section className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <h2 className="text-lg font-bold">
-                Private group:{" "}
-                <span className="font-mono tracking-widest">{group}</span>
+              <Users className="h-5 w-5" style={{ color: 'var(--mako-teal)' }} />
+              <h2
+                className="text-lg font-bold tracking-widest uppercase"
+                style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-ink)' }}
+              >
+                Group:{' '}
+                <span style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-teal)' }}>
+                  {group}
+                </span>
               </h2>
             </div>
-            {privateLB.isLoading && <Skeleton className="h-32 w-full" />}
+            {privateLB.isLoading && (
+              <div className="h-32 w-full clip-mako animate-pulse" style={{ background: 'var(--mako-panel)' }} />
+            )}
             {privateLB.isError && (
-              <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
-                <span className="text-destructive">Couldn't load group leaderboard.</span>
-                <Button size="sm" variant="outline" onClick={() => privateLB.refetch()}>
+              <div
+                className="flex items-center justify-between clip-mako p-3 text-sm"
+                style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-wrong)' }}
+              >
+                <span style={{ color: 'var(--mako-wrong)' }}>Couldn't load group leaderboard.</span>
+                <MakoButton variant="secondary" className="py-1 px-3 text-xs" onClick={() => privateLB.refetch()}>
                   Retry
-                </Button>
+                </MakoButton>
               </div>
             )}
             {privateLB.data && (
               <LeaderboardTable entries={privateLB.data} highlight={highlight} />
             )}
             {highlight && publicLB.data && (
-              <p className="text-sm text-muted-foreground">
+              <p
+                className="text-xs tracking-widest"
+                style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+              >
                 {publicRank
-                  ? `Your rank on the public leaderboard: #${publicRank} of ${publicLB.data.length}`
-                  : `Your score isn't on the public leaderboard yet.`}
+                  ? `PUBLIC RANK: #${publicRank} OF ${publicLB.data.length}`
+                  : `YOUR SCORE ISN'T ON THE PUBLIC LEADERBOARD YET.`}
               </p>
             )}
           </section>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" /> Join a private group
-              </CardTitle>
-              <CardDescription>
-                Enter a group code to see that group's private leaderboard.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="6-char code"
-                  value={joinInput}
-                  onChange={(e) => {
-                    setJoinInput(e.target.value);
-                    if (joinError) setJoinError(null);
-                  }}
-                  maxLength={8}
-                  className="font-mono uppercase tracking-widest"
-                />
-                <Button onClick={handleJoin}>View group</Button>
-              </div>
-              {joinError && <p className="text-xs text-destructive">{joinError}</p>}
-              {session.privateGroupCode && session.privateGroupCode !== group && (
-                <p className="text-xs text-muted-foreground">
-                  Your current session code:{" "}
-                  <button
-                    type="button"
-                    className="font-mono underline"
-                    onClick={() =>
-                      navigate({
-                        to: "/quiz/$quizId/leaderboard",
-                        params: { quizId },
-                        search: { group: session.privateGroupCode ?? undefined },
-                      })
-                    }
-                  >
-                    {session.privateGroupCode}
-                  </button>
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <MakoPanel className="flex flex-col gap-4 p-6">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" style={{ color: 'var(--mako-teal)' }} />
+              <span
+                className="text-sm font-bold tracking-widest uppercase"
+                style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-ink)' }}
+              >
+                Join a private group
+              </span>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--mako-sub)' }}>
+              Enter a group code to see that group's private leaderboard.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="6-char code"
+                value={joinInput}
+                onChange={(e) => { setJoinInput(e.target.value); if (joinError) setJoinError(null); }}
+                maxLength={8}
+                className="font-mono uppercase tracking-widest border-[var(--mako-line)] bg-transparent focus-visible:ring-[var(--mako-teal)]"
+                style={{ color: 'var(--mako-ink)' }}
+              />
+              <MakoButton variant="secondary" className="shrink-0 py-2 px-4 text-sm uppercase" onClick={handleJoin}>
+                View group
+              </MakoButton>
+            </div>
+            {joinError && <p className="text-xs" style={{ color: 'var(--mako-wrong)' }}>{joinError}</p>}
+            {session.privateGroupCode && session.privateGroupCode !== group && (
+              <p className="text-xs" style={{ color: 'var(--mako-sub)' }}>
+                Your session code:{' '}
+                <button
+                  type="button"
+                  className="underline transition-colors hover:text-[var(--mako-teal)]"
+                  style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+                  onClick={() =>
+                    navigate({
+                      to: "/quiz/$quizId/leaderboard",
+                      params: { quizId },
+                      search: { group: session.privateGroupCode ?? undefined },
+                    })
+                  }
+                >
+                  {session.privateGroupCode}
+                </button>
+              </p>
+            )}
+          </MakoPanel>
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold">Public leaderboard</h2>
-          <p className="text-sm text-muted-foreground">
-            All players, sorted by score (highest first), with total time as tiebreaker.
+          <h2
+            className="text-lg font-bold tracking-widest uppercase"
+            style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-ink)' }}
+          >
+            Public leaderboard
+          </h2>
+          <p className="text-xs" style={{ color: 'var(--mako-sub)' }}>
+            All players, sorted by score (highest first), total time as tiebreaker.
           </p>
-          {publicLB.isLoading && <Skeleton className="h-32 w-full" />}
+          {publicLB.isLoading && (
+            <div className="h-32 w-full clip-mako animate-pulse" style={{ background: 'var(--mako-panel)' }} />
+          )}
           {publicLB.isError && (
-            <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
-              <span className="text-destructive">Couldn't load public leaderboard.</span>
-              <Button size="sm" variant="outline" onClick={() => publicLB.refetch()}>
+            <div
+              className="flex items-center justify-between clip-mako p-3 text-sm"
+              style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-wrong)' }}
+            >
+              <span style={{ color: 'var(--mako-wrong)' }}>Couldn't load public leaderboard.</span>
+              <MakoButton variant="secondary" className="py-1 px-3 text-xs" onClick={() => publicLB.refetch()}>
                 Retry
-              </Button>
+              </MakoButton>
             </div>
           )}
           {publicLB.data && (
-            <LeaderboardTable
-              entries={publicLB.data}
-              highlight={!group ? highlight : null}
-            />
+            <LeaderboardTable entries={publicLB.data} highlight={!group ? highlight : null} />
           )}
         </section>
       </main>

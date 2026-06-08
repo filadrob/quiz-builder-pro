@@ -19,6 +19,19 @@
  */
 
 @theme inline {
+  --font-ui: 'Chakra Petch', sans-serif;
+  --font-mono-mako: 'Share Tech Mono', monospace;
+
+  --color-mako-teal: var(--mako-teal);
+  --color-mako-amber: var(--mako-amber);
+  --color-mako-magenta: var(--mako-magenta);
+  --color-mako-accent: var(--mako-accent);
+  --color-mako-accent-deep: var(--mako-accent-deep);
+  --color-mako-bg: var(--mako-bg);
+  --color-mako-panel-flat: var(--mako-panel-flat);
+  --color-mako-ink: var(--mako-ink);
+  --color-mako-sub: var(--mako-sub);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -138,7 +151,94 @@
   }
 
   body {
-    background-color: var(--color-background);
+    background: var(--mako-page);
     color: var(--color-foreground);
+    font-family: var(--font-ui);
   }
+}
+
+/* ── Mako design tokens — light (default) ───────────────────────────────── */
+:root {
+  /* Accent values are darkened for accessible contrast on light backgrounds */
+  --mako-teal:        #0e8f6e;   /* darkened from neon #46e0b0 — 5.2:1 on white */
+  --mako-amber:       #bd7710;   /* darkened from #ffb454 — 4.6:1 on white */
+  --mako-magenta:     #c02060;   /* darkened from #ff5a8a — 7.8:1 on white */
+  --mako-accent:      #0e8f6e;
+  --mako-accent-deep: #0a6e55;
+  --mako-bg:          #edf7f2;
+  --mako-panel-flat:  #edf7f2;
+  --mako-ink:         #0c2a22;
+  --mako-sub:         #4d756a;
+  --mako-correct:     #0e8f6e;
+  --mako-wrong:       #cf3d4a;
+  --mako-panel:       linear-gradient(160deg, #ffffff, #e7f4ee);
+  --mako-line:        rgba(14, 143, 110, 0.5);
+  --mako-line-soft:   rgba(14, 143, 110, 0.18);
+  --mako-glow:        rgba(14, 143, 110, 0.22);
+  --mako-page:        radial-gradient(120% 100% at 50% 0%, #f1faf6 0%, #dcebe4 60%, #cbe0d6 100%);
+}
+
+/* ── Mako design tokens — dark ──────────────────────────────────────────── */
+.dark {
+  --mako-teal:        #46e0b0;
+  --mako-amber:       #ffb454;
+  --mako-magenta:     #ff5a8a;
+  --mako-accent:      #46e0b0;
+  --mako-accent-deep: #2ab88a;
+  --mako-bg:          #0a0a0a;
+  --mako-panel-flat:  rgba(14, 42, 30, 0.9);
+  --mako-ink:         #e3f6ef;
+  --mako-sub:         #74a89a;
+  --mako-correct:     #46e0b0;
+  --mako-wrong:       #ff5a6a;
+  --mako-panel:       linear-gradient(160deg, rgba(18,52,43,.92), rgba(6,22,16,.94));
+  --mako-line:        rgba(70,224,176,.45);
+  --mako-line-soft:   rgba(70,224,176,.16);
+  --mako-glow:        rgba(70,224,176,.35);
+  --mako-page:        radial-gradient(120% 100% at 50% 0%, #0a241d 0%, #04120d 50%, #010705 100%);
+}
+
+/* ── Mako Tailwind utilities ────────────────────────────────────────────── */
+@utility clip-mako {
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+}
+
+@utility glow-teal {
+  box-shadow: 0 0 12px var(--mako-teal);
+}
+
+@utility glow-amber {
+  box-shadow: 0 0 12px var(--mako-amber);
+}
+
+@utility glow-magenta {
+  box-shadow: 0 0 12px var(--mako-magenta);
+}
+
+@utility text-glow-teal {
+  text-shadow: 0 0 12px var(--mako-teal);
+}
+
+@utility text-glow-amber {
+  text-shadow: 0 0 12px var(--mako-amber);
+}
+
+@utility text-glow-magenta {
+  text-shadow: 0 0 12px var(--mako-magenta);
+}
+
+/* ── .scanlines overlay ─────────────────────────────────────────────────── */
+.scanlines {
+  position: relative;
+}
+
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+  mix-blend-mode: overlay;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0 1px, transparent 1px 3px);
+  opacity: 0.18;
 }

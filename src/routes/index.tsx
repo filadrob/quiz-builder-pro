@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { QuizCard } from "@/components/quiz/QuizCard";
+import { MakoBar, ThemeToggle } from "@/components/mako";
 import { fetchQuizIndex } from "@/lib/sheets";
-import { AlertCircle, Trophy } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,45 +25,81 @@ function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-5">
-          <Trophy className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">Flashcard Quizzes</h1>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
+        <div className="mx-auto flex max-w-5xl items-center gap-3">
+          <MakoBar channel="quiz-platform" guild="FLASHCARD HQ" className="flex-1" />
+          <ThemeToggle />
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
         <section className="mb-8">
-          <h2 className="text-2xl font-bold">Pick a quiz</h2>
-          <p className="text-sm text-muted-foreground">
-            Image-based questions, a ticking clock, and a leaderboard.
+          <h2
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: 'var(--mako-teal)', textShadow: '0 0 12px var(--mako-glow)' }}
+          >
+            SELECT QUIZ
+          </h2>
+          <p
+            className="mt-1 text-[11px] tracking-widest"
+            style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+          >
+            IMAGE QUESTIONS · TICKING CLOCK · LEADERBOARD
           </p>
         </section>
 
         {q.isLoading && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-lg" />
+              <div
+                key={i}
+                className="h-48 w-full clip-mako animate-pulse"
+                style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+              />
             ))}
           </div>
         )}
 
         {q.isError && (
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-8 text-center">
-            <AlertCircle className="h-10 w-10 text-destructive" />
-            <p className="font-medium">Couldn't load the quiz list.</p>
-            <p className="text-sm text-muted-foreground">
+          <div
+            className="flex flex-col items-center gap-3 clip-mako p-8 text-center"
+            style={{
+              background: 'var(--mako-panel)',
+              boxShadow: 'inset 0 0 0 1px var(--mako-wrong)',
+            }}
+          >
+            <AlertCircle className="h-10 w-10" style={{ color: 'var(--mako-wrong)' }} />
+            <p className="font-medium" style={{ color: 'var(--mako-ink)' }}>
+              Couldn't load the quiz list.
+            </p>
+            <p className="text-sm" style={{ color: 'var(--mako-sub)' }}>
               Check that the Sheets API key and quiz index sheet ID are configured.
             </p>
-            <Button variant="outline" onClick={() => q.refetch()}>Retry</Button>
+            <button
+              className="clip-mako mt-1 px-4 py-2 text-sm tracking-widest uppercase transition-opacity hover:opacity-80"
+              style={{
+                fontFamily: 'var(--font-ui)',
+                background: 'var(--mako-panel)',
+                boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                color: 'var(--mako-ink)',
+              }}
+              onClick={() => q.refetch()}
+            >
+              Retry
+            </button>
           </div>
         )}
 
         {q.isSuccess && q.data.length === 0 && (
-          <div className="rounded-lg border bg-card p-12 text-center">
-            <h3 className="text-lg font-semibold">No quizzes yet</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+          <div
+            className="clip-mako p-12 text-center"
+            style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+          >
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--mako-ink)' }}>
+              No quizzes yet
+            </h3>
+            <p className="mt-2 text-sm" style={{ color: 'var(--mako-sub)' }}>
               Add a row to the Quiz Index sheet to publish your first quiz.
             </p>
           </div>
@@ -78,8 +113,14 @@ function HomePage() {
           </div>
         )}
 
-        <div className="mt-12 text-center text-xs text-muted-foreground">
-          <Link to="/" className="hover:underline">Home</Link>
+        <div className="mt-12 text-center">
+          <Link
+            to="/"
+            className="text-[11px] tracking-widest transition-colors hover:text-[var(--mako-teal)]"
+            style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+          >
+            HOME
+          </Link>
         </div>
       </main>
     </div>

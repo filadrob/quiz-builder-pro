@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { fetchQuizIndex, fetchQuiz } from "@/lib/sheets";
 import { shuffle } from "@/lib/shuffle";
 import { useQuizSession } from "@/lib/session-context";
@@ -58,9 +57,7 @@ function SetupPage() {
       await navigator.clipboard.writeText(generatedCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const handleJoin = () => {
@@ -85,11 +82,7 @@ function SetupPage() {
     if (!quizQ.data) return;
     const participantName = anonymous ? "Anonymous" : (name.trim() || "Anonymous");
     session.setQuiz(quizQ.data);
-    session.setSettings({
-      participantName,
-      isAnonymous: anonymous,
-      perQuestionFeedback: feedback,
-    });
+    session.setSettings({ participantName, isAnonymous: anonymous, perQuestionFeedback: feedback });
     session.setPrivateGroupCode(groupCode || null);
     const order = shuffle(quizQ.data.questions).map((q) => q.id);
     session.setOrder(order);
@@ -99,169 +92,271 @@ function SetupPage() {
   const canStart = !!quizQ.data;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="mr-1 h-4 w-4" /> All quizzes
-            </Link>
-          </Button>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <Link
+            to="/"
+            className="flex items-center gap-1 clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+            style={{
+              fontFamily: 'var(--font-ui)',
+              background: 'var(--mako-panel)',
+              boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+              color: 'var(--mako-sub)',
+            }}
+          >
+            <ArrowLeft className="h-3 w-3" /> Back
+          </Link>
+          <MakoBar
+            channel={quizId}
+            guild={quizQ.data?.title ?? '...'}
+            className="flex-1"
+          />
+          <ThemeToggle />
         </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-8">
-        {loading && <Skeleton className="h-64 w-full rounded-lg" />}
+        {loading && (
+          <div
+            className="h-64 w-full clip-mako animate-pulse"
+            style={{ background: 'var(--mako-panel)' }}
+          />
+        )}
 
         {!loading && !entry && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Quiz not found</CardTitle>
-              <CardDescription>
-                This quiz id isn't listed in the index.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <MakoPanel className="p-6 text-center">
+            <p className="font-semibold" style={{ color: 'var(--mako-wrong)' }}>Quiz not found</p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--mako-sub)' }}>
+              This quiz id isn't listed in the index.
+            </p>
+          </MakoPanel>
         )}
 
         {!loading && entry && quizQ.isError && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Couldn't load quiz</CardTitle>
-              <CardDescription>
-                The quiz JSON file failed to load. Check the URL in the index sheet.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <MakoPanel className="p-6 text-center">
+            <p className="font-semibold" style={{ color: 'var(--mako-wrong)' }}>Couldn't load quiz</p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--mako-sub)' }}>
+              The quiz JSON file failed to load. Check the URL in the index sheet.
+            </p>
+          </MakoPanel>
         )}
 
         {!loading && entry && quizQ.data && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">{quizQ.data.title}</CardTitle>
-              <CardDescription>{quizQ.data.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-6">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-md bg-secondary p-3">
-                  <div className="text-muted-foreground">Questions</div>
-                  <div className="text-lg font-semibold">{quizQ.data.questions.length}</div>
-                </div>
-                <div className="rounded-md bg-secondary p-3">
-                  <div className="text-muted-foreground">Time per question</div>
-                  <div className="text-lg font-semibold">{quizQ.data.timeLimitSeconds}s</div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="name">Your name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter your name (leave blank to play as Anonymous)"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={anonymous}
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <Label htmlFor="anon" className="cursor-pointer">Play anonymously</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Your score will be saved as "Anonymous".
-                  </p>
-                </div>
-                <Switch id="anon" checked={anonymous} onCheckedChange={setAnonymous} />
-              </div>
-
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <Label htmlFor="fb" className="cursor-pointer">Per-question feedback</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Show correct/incorrect after each answer.
-                  </p>
-                </div>
-                <Switch id="fb" checked={feedback} onCheckedChange={setFeedback} />
-              </div>
-
-              <div className="flex flex-col gap-3 rounded-md border p-3">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <Label className="text-sm font-medium">Private group (optional)</Label>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Play with friends on a private leaderboard. Generate a code to share, or join one.
+          <MakoPanel className="flex flex-col gap-6 p-6">
+            <div>
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: 'var(--mako-teal)', textShadow: '0 0 10px var(--mako-glow)' }}
+              >
+                {quizQ.data.title}
+              </h2>
+              {quizQ.data.description && (
+                <p className="mt-1 text-sm" style={{ color: 'var(--mako-sub)' }}>
+                  {quizQ.data.description}
                 </p>
+              )}
+            </div>
 
-                {groupCode ? (
-                  <div className="flex flex-col gap-2 rounded-md bg-secondary p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          {generatedCode ? "Your group code" : "Joining group"}
-                        </div>
-                        <div className="font-mono text-xl font-semibold tracking-widest">
-                          {groupCode}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {generatedCode && (
-                          <Button size="sm" variant="outline" onClick={handleCopy} aria-label="Copy code">
-                            {copied ? (
-                              <>
-                                <Check className="mr-1 h-4 w-4" /> Copied
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="mr-1 h-4 w-4" /> Copy
-                              </>
-                            )}
-                          </Button>
-                        )}
-                        <Button size="sm" variant="ghost" onClick={handleClearGroup}>
-                          Clear
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <Button type="button" variant="outline" onClick={handleGenerate}>
-                      Generate group code
-                    </Button>
-                    <div className="flex items-center gap-2">
-                      <div className="h-px flex-1 bg-border" />
-                      <span className="text-xs text-muted-foreground">or join</span>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter 6-char code"
-                        value={joinInput}
-                        onChange={(e) => {
-                          setJoinInput(e.target.value);
-                          if (joinError) setJoinError(null);
-                        }}
-                        maxLength={8}
-                        className="font-mono uppercase tracking-widest"
-                      />
-                      <Button type="button" variant="secondary" onClick={handleJoin}>
-                        Join
-                      </Button>
-                    </div>
-                    {joinError && <p className="text-xs text-destructive">{joinError}</p>}
-                  </div>
-                )}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <StatBox label="QUESTIONS" value={String(quizQ.data.questions.length)} />
+              <StatBox label="TIME / Q" value={`${quizQ.data.timeLimitSeconds}s`} />
+            </div>
+
+            <Field label="Your name">
+              <Input
+                id="name"
+                placeholder="Leave blank to play as Anonymous"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={anonymous}
+                autoFocus
+                className="border-[var(--mako-line)] bg-transparent focus-visible:ring-[var(--mako-teal)]"
+                style={{ color: 'var(--mako-ink)' }}
+              />
+            </Field>
+
+            <ToggleRow
+              id="anon"
+              label="Play anonymously"
+              desc='Your score will be saved as "Anonymous".'
+              checked={anonymous}
+              onCheckedChange={setAnonymous}
+            />
+
+            <ToggleRow
+              id="fb"
+              label="Per-question feedback"
+              desc="Show correct/incorrect after each answer."
+              checked={feedback}
+              onCheckedChange={setFeedback}
+            />
+
+            {/* Group code */}
+            <div
+              className="flex flex-col gap-3 clip-mako p-4"
+              style={{ background: 'var(--mako-line-soft)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+            >
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" style={{ color: 'var(--mako-sub)' }} />
+                <span
+                  className="text-sm font-medium tracking-widest uppercase"
+                  style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-ink)' }}
+                >
+                  Private Group
+                </span>
+                <span
+                  className="text-[10px] tracking-widest"
+                  style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+                >
+                  (optional)
+                </span>
               </div>
+              <p className="text-[11px]" style={{ color: 'var(--mako-sub)' }}>
+                Play with friends on a private leaderboard. Generate a code to share, or join one.
+              </p>
 
-              <Button size="lg" disabled={!canStart} onClick={handleStart}>
-                Start quiz
-              </Button>
-            </CardContent>
-          </Card>
+              {groupCode ? (
+                <div
+                  className="flex items-center justify-between gap-2 clip-mako px-4 py-3"
+                  style={{ background: 'var(--mako-panel)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+                >
+                  <div>
+                    <div
+                      className="text-[10px] tracking-widest"
+                      style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+                    >
+                      {generatedCode ? 'YOUR CODE' : 'JOINING'}
+                    </div>
+                    <div
+                      className="text-xl font-semibold tracking-widest"
+                      style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-teal)' }}
+                    >
+                      {groupCode}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {generatedCode && (
+                      <MakoButton variant="secondary" className="py-2 px-3 text-xs" onClick={handleCopy}>
+                        {copied ? <><Check className="mr-1 h-3 w-3 inline" />Copied</> : <><Copy className="mr-1 h-3 w-3 inline" />Copy</>}
+                      </MakoButton>
+                    )}
+                    <MakoButton variant="secondary" className="py-2 px-3 text-xs" onClick={handleClearGroup}>
+                      Clear
+                    </MakoButton>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <MakoButton variant="secondary" className="py-3 text-sm" onClick={handleGenerate}>
+                    Generate group code
+                  </MakoButton>
+                  <div className="flex items-center gap-2">
+                    <div className="h-px flex-1" style={{ background: 'var(--mako-line)' }} />
+                    <span className="text-[10px] tracking-widest" style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}>
+                      OR JOIN
+                    </span>
+                    <div className="h-px flex-1" style={{ background: 'var(--mako-line)' }} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter 6-char code"
+                      value={joinInput}
+                      onChange={(e) => { setJoinInput(e.target.value); if (joinError) setJoinError(null); }}
+                      maxLength={8}
+                      className="font-mono uppercase tracking-widest border-[var(--mako-line)] bg-transparent focus-visible:ring-[var(--mako-teal)]"
+                      style={{ color: 'var(--mako-ink)' }}
+                    />
+                    <MakoButton variant="secondary" className="shrink-0 py-2 px-4 text-sm" onClick={handleJoin}>
+                      Join
+                    </MakoButton>
+                  </div>
+                  {joinError && (
+                    <p className="text-xs" style={{ color: 'var(--mako-wrong)' }}>{joinError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <MakoButton
+              className="py-4 text-base uppercase"
+              disabled={!canStart}
+              onClick={handleStart}
+            >
+              Start Quiz
+            </MakoButton>
+          </MakoPanel>
         )}
       </main>
+    </div>
+  );
+}
+
+function StatBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      className="clip-mako p-3"
+      style={{ background: 'var(--mako-line-soft)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+    >
+      <div
+        className="text-[10px] tracking-widest"
+        style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+      >
+        {label}
+      </div>
+      <div
+        className="text-lg font-semibold"
+        style={{ fontFamily: 'var(--font-ui)', color: 'var(--mako-amber)' }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label
+        className="text-[11px] tracking-widest uppercase"
+        style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-sub)' }}
+      >
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+function ToggleRow({
+  id,
+  label,
+  desc,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  label: string;
+  desc: string;
+  checked: boolean;
+  onCheckedChange: (v: boolean) => void;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between clip-mako px-4 py-3"
+      style={{ background: 'var(--mako-line-soft)', boxShadow: 'inset 0 0 0 1px var(--mako-line)' }}
+    >
+      <div>
+        <Label
+          htmlFor={id}
+          className="cursor-pointer text-sm font-medium"
+          style={{ color: 'var(--mako-ink)' }}
+        >
+          {label}
+        </Label>
+        <p className="text-xs" style={{ color: 'var(--mako-sub)' }}>{desc}</p>
+      </div>
+      <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   );
 }
