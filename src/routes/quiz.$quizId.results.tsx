@@ -139,6 +139,19 @@ function ResultsPage() {
         />
 
         <MakoPanel className="flex flex-col gap-4 p-6">
+          {testMode && (
+            <span
+              className="self-start clip-mako px-2 py-1 text-[10px] tracking-widest uppercase"
+              style={{
+                fontFamily: 'var(--font-mono-mako)',
+                background: 'var(--mako-panel)',
+                boxShadow: 'inset 0 0 0 1px var(--mako-amber)',
+                color: 'var(--mako-amber)',
+              }}
+            >
+              TEST PLAY
+            </span>
+          )}
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5" style={{ color: 'var(--mako-amber)' }} />
             <span
@@ -149,7 +162,25 @@ function ResultsPage() {
             </span>
           </div>
 
-          {submitted ? (
+          {!canSubmit ? (
+            <>
+              <p className="text-sm" style={{ color: 'var(--mako-sub)' }}>
+                Scores are not saved in test play.
+              </p>
+              <Link
+                to="/admin"
+                className="self-start clip-mako px-4 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                Back to builder
+              </Link>
+            </>
+          ) : submitted ? (
             <p className="text-sm tracking-widest" style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-correct)' }}>
               SCORE SUBMITTED ✓
             </p>
@@ -204,24 +235,26 @@ function ResultsPage() {
             </>
           )}
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {groupCode && (
+          {canSubmit && !testMode && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {groupCode && (
+                <MakoButton
+                  variant="secondary"
+                  className="py-2 px-4 text-xs uppercase"
+                  onClick={() => goToLeaderboard({ includeGroup: true })}
+                >
+                  Group leaderboard ({groupCode})
+                </MakoButton>
+              )}
               <MakoButton
                 variant="secondary"
                 className="py-2 px-4 text-xs uppercase"
-                onClick={() => goToLeaderboard({ includeGroup: true })}
+                onClick={() => goToLeaderboard({ includeGroup: false })}
               >
-                Group leaderboard ({groupCode})
+                Public leaderboard
               </MakoButton>
-            )}
-            <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={() => goToLeaderboard({ includeGroup: false })}
-            >
-              Public leaderboard
-            </MakoButton>
-          </div>
+            </div>
+          )}
         </MakoPanel>
       </main>
     </div>
