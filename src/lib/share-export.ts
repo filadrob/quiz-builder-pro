@@ -23,8 +23,13 @@ async function fetchAndInlineFonts(): Promise<string> {
       urls.map(async (u) => {
         try {
           const res = await fetch(u);
-          const buf = await res.arrayBuffer();
-          const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+          const bytes = new Uint8Array(buf);
+          let bin = "";
+          const CHUNK = 0x8000;
+          for (let i = 0; i < bytes.length; i += CHUNK) {
+            bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+          }
+          const b64 = btoa(bin);
           const dataUrl = `data:font/woff2;base64,${b64}`;
           css = css.split(u).join(dataUrl);
         } catch {
