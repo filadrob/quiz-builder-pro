@@ -628,7 +628,7 @@ function ImageProbe({ url }: { url: string }) {
   const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
 
   // Reset when URL changes.
-  useMemo(() => {
+  useEffect(() => {
     setState(url.trim() ? "loading" : "idle");
   }, [url]);
 
