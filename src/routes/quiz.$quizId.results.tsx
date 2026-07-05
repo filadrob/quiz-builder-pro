@@ -37,6 +37,8 @@ function ResultsPage() {
   const totalScore = session.answers.reduce((s, a) => s + a.points, 0);
   const totalTime = session.answers.reduce((s, a) => s + a.responseTime, 0);
   const groupCode = session.privateGroupCode ?? undefined;
+  const testMode = session.testMode;
+  const canSubmit = !testMode || session.allowSubmit;
 
   const goToLeaderboard = (opts?: { submittedName?: string; includeGroup?: boolean }) => {
     const includeGroup = opts?.includeGroup ?? true;
@@ -67,7 +69,7 @@ function ResultsPage() {
         privateGroupCode: groupCode,
       });
       setSubmitted(true);
-      goToLeaderboard({ submittedName: finalName });
+      if (!testMode) goToLeaderboard({ submittedName: finalName });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
