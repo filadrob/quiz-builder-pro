@@ -23,6 +23,7 @@ async function fetchAndInlineFonts(): Promise<string> {
       urls.map(async (u) => {
         try {
           const res = await fetch(u);
+          const buf = await res.arrayBuffer();
           const bytes = new Uint8Array(buf);
           let bin = "";
           const CHUNK = 0x8000;
