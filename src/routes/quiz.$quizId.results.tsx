@@ -83,19 +83,34 @@ function ResultsPage() {
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <MakoBar channel="results" guild={session.quiz.title} className="flex-1" />
           <div className="flex items-center gap-2">
-            <Link
-              to="/quiz/$quizId"
-              params={{ quizId }}
-              className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
-              style={{
-                fontFamily: 'var(--font-ui)',
-                background: 'var(--mako-panel)',
-                boxShadow: 'inset 0 0 0 1px var(--mako-line)',
-                color: 'var(--mako-sub)',
-              }}
-            >
-              <RotateCcw className="mr-1 inline h-3 w-3" />Retake
-            </Link>
+            {testMode ? (
+              <Link
+                to="/admin"
+                className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                <RotateCcw className="mr-1 inline h-3 w-3" />Back to builder
+              </Link>
+            ) : (
+              <Link
+                to="/quiz/$quizId"
+                params={{ quizId }}
+                className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                <RotateCcw className="mr-1 inline h-3 w-3" />Retake
+              </Link>
+            )}
             <Link
               to="/"
               className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
