@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
-import { Home, Plus, Trash2, ArrowUp, ArrowDown, Upload, Download, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { Home, Plus, Trash2, ArrowUp, ArrowDown, Upload, Download, Image as ImageIcon, AlertTriangle, Play } from "lucide-react";
 import { exportQuiz, importQuiz } from "@/lib/admin-persistence";
+import { useQuizSession } from "@/lib/session-context";
+import { shuffle } from "@/lib/shuffle";
+import { makeShapesQuiz, makeFfxivQuiz } from "@/lib/sample-quizzes";
 import type { Choice, Question, Quiz } from "@/lib/types";
 
 export const Route = createFileRoute("/admin")({
@@ -78,7 +81,10 @@ function AdminPage() {
   const [quiz, setQuiz] = useState<EditorQuiz>(() => makeQuiz());
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [submitToLeaderboard, setSubmitToLeaderboard] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const session = useQuizSession();
+  const navigate = useNavigate();
 
   const validationErrors = useMemo(() => validate(quiz), [quiz]);
 
@@ -174,6 +180,36 @@ function AdminPage() {
     }
   };
 
+  const handleLoadSample = (key: string) => {
+    let factory: null | (() => EditorQuiz) = null;
+    if (key === "shapes") factory = makeShapesQuiz;
+    else if (key === "ffxiv") factory = makeFfxivQuiz;
+    if (!factory) return;
+    const loaded = factory();
+    setQuiz(loaded);
+    setErrors([]);
+    setNotice(`Loaded "${loaded.title}".`);
+  };
+
+  const handleTestPlay = () => {
+    setNotice(null);
+    const errs = validate(quiz);
+    setErrors(errs);
+    if (errs.length) return;
+    // strip editor-only status flag; keep everything else
+    const { status: _status, ...rest } = quiz;
+    void _status;
+    const copy: Quiz = { ...rest, questions: quiz.questions.map((q) => ({ ...q, choices: q.choices.map((c) => ({ ...c })) })) };
+    session.reset();
+    session.setQuiz(copy);
+    session.setSettings({ participantName: "Test Player", isAnonymous: false, perQuestionFeedback: true });
+    session.setPrivateGroupCode(null);
+    session.setTestMode(true);
+    session.setAllowSubmit(submitToLeaderboard);
+    session.setOrder(shuffle(copy.questions).map((q) => q.id));
+    navigate({ to: "/quiz/$quizId/play", params: { quizId: copy.id } });
+  };
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
@@ -200,44 +236,94 @@ function AdminPage() {
 
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
         {/* Toolbar */}
-        <MakoPanel className="flex flex-wrap items-center justify-between gap-3 p-4">
-          <div
-            className="text-sm font-bold tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-ui)", color: "var(--mako-ink)" }}
-          >
-            Editing quiz
+        <MakoPanel className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              className="text-sm font-bold tracking-widest uppercase"
+              style={{ fontFamily: "var(--font-ui)", color: "var(--mako-ink)" }}
+            >
+              Editing quiz
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value=""
+                onChange={(e) => {
+                  handleLoadSample(e.target.value);
+                  e.target.value = "";
+                }}
+                className="clip-mako px-3 py-2 text-xs uppercase"
+                style={{
+                  fontFamily: "var(--font-ui)",
+                  background: "var(--mako-panel)",
+                  boxShadow: "inset 0 0 0 1px var(--mako-line)",
+                  color: "var(--mako-ink)",
+                }}
+                aria-label="Load sample quiz"
+              >
+                <option value="" disabled>
+                  Load sample…
+                </option>
+                <option value="shapes">Shapes (test fixture)</option>
+                <option value="ffxiv">FFXIV — Job & Realm Basics</option>
+              </select>
+              <MakoButton
+                variant="secondary"
+                className="py-2 px-4 text-xs uppercase"
+                onClick={() => setQuiz(makeQuiz())}
+                type="button"
+              >
+                New
+              </MakoButton>
+              <MakoButton
+                variant="secondary"
+                className="py-2 px-4 text-xs uppercase"
+                onClick={handleImportClick}
+                type="button"
+              >
+                <Upload className="mr-1 inline h-3 w-3" /> Import JSON
+              </MakoButton>
+              <MakoButton
+                className="py-2 px-4 text-xs uppercase"
+                onClick={handleExport}
+                type="button"
+              >
+                <Download className="mr-1 inline h-3 w-3" /> Export JSON
+              </MakoButton>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 clip-mako p-3"
+            style={{ background: "var(--mako-line-soft)", boxShadow: "inset 0 0 0 1px var(--mako-line)" }}
+          >
+            <div className="flex flex-col gap-1">
+              <label className="flex cursor-pointer items-center gap-2 text-sm" style={{ color: "var(--mako-ink)" }}>
+                <input
+                  type="checkbox"
+                  checked={submitToLeaderboard}
+                  onChange={(e) => setSubmitToLeaderboard(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--mako-teal)]"
+                />
+                <span className="font-medium">Submit scores to leaderboard</span>
+              </label>
+              <p className="text-[11px]" style={{ color: "var(--mako-sub)" }}>
+                Off = test silently. On = your score posts to the real leaderboard under this quiz's id.
+              </p>
+            </div>
             <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={() => setQuiz(makeQuiz())}
+              className="py-3 px-6 text-sm uppercase"
+              onClick={handleTestPlay}
               type="button"
             >
-              New
+              <Play className="mr-1 inline h-4 w-4" /> Test Play
             </MakoButton>
-            <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={handleImportClick}
-              type="button"
-            >
-              <Upload className="mr-1 inline h-3 w-3" /> Import JSON
-            </MakoButton>
-            <MakoButton
-              className="py-2 px-4 text-xs uppercase"
-              onClick={handleExport}
-              type="button"
-            >
-              <Download className="mr-1 inline h-3 w-3" /> Export JSON
-            </MakoButton>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
-            />
           </div>
         </MakoPanel>
 

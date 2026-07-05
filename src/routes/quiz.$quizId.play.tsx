@@ -94,6 +94,19 @@ function PlayPage() {
               online={Math.min(index + 1, orderedQuestions.length)}
               className="flex-1"
             />
+            {session.testMode && (
+              <span
+                className="clip-mako px-2 py-1 text-[10px] tracking-widest uppercase"
+                style={{
+                  fontFamily: 'var(--font-mono-mako)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-amber)',
+                  color: 'var(--mako-amber)',
+                }}
+              >
+                TEST PLAY
+              </span>
+            )}
             <ThemeToggle />
           </div>
           {/* Progress bar */}

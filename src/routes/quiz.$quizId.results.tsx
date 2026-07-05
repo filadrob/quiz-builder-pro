@@ -37,6 +37,8 @@ function ResultsPage() {
   const totalScore = session.answers.reduce((s, a) => s + a.points, 0);
   const totalTime = session.answers.reduce((s, a) => s + a.responseTime, 0);
   const groupCode = session.privateGroupCode ?? undefined;
+  const testMode = session.testMode;
+  const canSubmit = !testMode || session.allowSubmit;
 
   const goToLeaderboard = (opts?: { submittedName?: string; includeGroup?: boolean }) => {
     const includeGroup = opts?.includeGroup ?? true;
@@ -67,7 +69,7 @@ function ResultsPage() {
         privateGroupCode: groupCode,
       });
       setSubmitted(true);
-      goToLeaderboard({ submittedName: finalName });
+      if (!testMode) goToLeaderboard({ submittedName: finalName });
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Submission failed");
     } finally {
@@ -81,19 +83,34 @@ function ResultsPage() {
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <MakoBar channel="results" guild={session.quiz.title} className="flex-1" />
           <div className="flex items-center gap-2">
-            <Link
-              to="/quiz/$quizId"
-              params={{ quizId }}
-              className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
-              style={{
-                fontFamily: 'var(--font-ui)',
-                background: 'var(--mako-panel)',
-                boxShadow: 'inset 0 0 0 1px var(--mako-line)',
-                color: 'var(--mako-sub)',
-              }}
-            >
-              <RotateCcw className="mr-1 inline h-3 w-3" />Retake
-            </Link>
+            {testMode ? (
+              <Link
+                to="/admin"
+                className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                <RotateCcw className="mr-1 inline h-3 w-3" />Back to builder
+              </Link>
+            ) : (
+              <Link
+                to="/quiz/$quizId"
+                params={{ quizId }}
+                className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                <RotateCcw className="mr-1 inline h-3 w-3" />Retake
+              </Link>
+            )}
             <Link
               to="/"
               className="clip-mako px-3 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
@@ -122,6 +139,19 @@ function ResultsPage() {
         />
 
         <MakoPanel className="flex flex-col gap-4 p-6">
+          {testMode && (
+            <span
+              className="self-start clip-mako px-2 py-1 text-[10px] tracking-widest uppercase"
+              style={{
+                fontFamily: 'var(--font-mono-mako)',
+                background: 'var(--mako-panel)',
+                boxShadow: 'inset 0 0 0 1px var(--mako-amber)',
+                color: 'var(--mako-amber)',
+              }}
+            >
+              TEST PLAY
+            </span>
+          )}
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5" style={{ color: 'var(--mako-amber)' }} />
             <span
@@ -132,7 +162,25 @@ function ResultsPage() {
             </span>
           </div>
 
-          {submitted ? (
+          {!canSubmit ? (
+            <>
+              <p className="text-sm" style={{ color: 'var(--mako-sub)' }}>
+                Scores are not saved in test play.
+              </p>
+              <Link
+                to="/admin"
+                className="self-start clip-mako px-4 py-2 text-xs tracking-widest uppercase transition-opacity hover:opacity-80"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  background: 'var(--mako-panel)',
+                  boxShadow: 'inset 0 0 0 1px var(--mako-line)',
+                  color: 'var(--mako-sub)',
+                }}
+              >
+                Back to builder
+              </Link>
+            </>
+          ) : submitted ? (
             <p className="text-sm tracking-widest" style={{ fontFamily: 'var(--font-mono-mako)', color: 'var(--mako-correct)' }}>
               SCORE SUBMITTED ✓
             </p>
@@ -187,24 +235,26 @@ function ResultsPage() {
             </>
           )}
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {groupCode && (
+          {canSubmit && !testMode && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {groupCode && (
+                <MakoButton
+                  variant="secondary"
+                  className="py-2 px-4 text-xs uppercase"
+                  onClick={() => goToLeaderboard({ includeGroup: true })}
+                >
+                  Group leaderboard ({groupCode})
+                </MakoButton>
+              )}
               <MakoButton
                 variant="secondary"
                 className="py-2 px-4 text-xs uppercase"
-                onClick={() => goToLeaderboard({ includeGroup: true })}
+                onClick={() => goToLeaderboard({ includeGroup: false })}
               >
-                Group leaderboard ({groupCode})
+                Public leaderboard
               </MakoButton>
-            )}
-            <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={() => goToLeaderboard({ includeGroup: false })}
-            >
-              Public leaderboard
-            </MakoButton>
-          </div>
+            </div>
+          )}
         </MakoPanel>
       </main>
     </div>
