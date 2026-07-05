@@ -236,44 +236,94 @@ function AdminPage() {
 
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
         {/* Toolbar */}
-        <MakoPanel className="flex flex-wrap items-center justify-between gap-3 p-4">
-          <div
-            className="text-sm font-bold tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-ui)", color: "var(--mako-ink)" }}
-          >
-            Editing quiz
+        <MakoPanel className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              className="text-sm font-bold tracking-widest uppercase"
+              style={{ fontFamily: "var(--font-ui)", color: "var(--mako-ink)" }}
+            >
+              Editing quiz
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value=""
+                onChange={(e) => {
+                  handleLoadSample(e.target.value);
+                  e.target.value = "";
+                }}
+                className="clip-mako px-3 py-2 text-xs uppercase"
+                style={{
+                  fontFamily: "var(--font-ui)",
+                  background: "var(--mako-panel)",
+                  boxShadow: "inset 0 0 0 1px var(--mako-line)",
+                  color: "var(--mako-ink)",
+                }}
+                aria-label="Load sample quiz"
+              >
+                <option value="" disabled>
+                  Load sample…
+                </option>
+                <option value="shapes">Shapes (test fixture)</option>
+                <option value="ffxiv">FFXIV — Job & Realm Basics</option>
+              </select>
+              <MakoButton
+                variant="secondary"
+                className="py-2 px-4 text-xs uppercase"
+                onClick={() => setQuiz(makeQuiz())}
+                type="button"
+              >
+                New
+              </MakoButton>
+              <MakoButton
+                variant="secondary"
+                className="py-2 px-4 text-xs uppercase"
+                onClick={handleImportClick}
+                type="button"
+              >
+                <Upload className="mr-1 inline h-3 w-3" /> Import JSON
+              </MakoButton>
+              <MakoButton
+                className="py-2 px-4 text-xs uppercase"
+                onClick={handleExport}
+                type="button"
+              >
+                <Download className="mr-1 inline h-3 w-3" /> Export JSON
+              </MakoButton>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 clip-mako p-3"
+            style={{ background: "var(--mako-line-soft)", boxShadow: "inset 0 0 0 1px var(--mako-line)" }}
+          >
+            <div className="flex flex-col gap-1">
+              <label className="flex cursor-pointer items-center gap-2 text-sm" style={{ color: "var(--mako-ink)" }}>
+                <input
+                  type="checkbox"
+                  checked={submitToLeaderboard}
+                  onChange={(e) => setSubmitToLeaderboard(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--mako-teal)]"
+                />
+                <span className="font-medium">Submit scores to leaderboard</span>
+              </label>
+              <p className="text-[11px]" style={{ color: "var(--mako-sub)" }}>
+                Off = test silently. On = your score posts to the real leaderboard under this quiz's id.
+              </p>
+            </div>
             <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={() => setQuiz(makeQuiz())}
+              className="py-3 px-6 text-sm uppercase"
+              onClick={handleTestPlay}
               type="button"
             >
-              New
+              <Play className="mr-1 inline h-4 w-4" /> Test Play
             </MakoButton>
-            <MakoButton
-              variant="secondary"
-              className="py-2 px-4 text-xs uppercase"
-              onClick={handleImportClick}
-              type="button"
-            >
-              <Upload className="mr-1 inline h-3 w-3" /> Import JSON
-            </MakoButton>
-            <MakoButton
-              className="py-2 px-4 text-xs uppercase"
-              onClick={handleExport}
-              type="button"
-            >
-              <Download className="mr-1 inline h-3 w-3" /> Export JSON
-            </MakoButton>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
-            />
           </div>
         </MakoPanel>
 
