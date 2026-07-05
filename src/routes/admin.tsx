@@ -81,7 +81,10 @@ function AdminPage() {
   const [quiz, setQuiz] = useState<EditorQuiz>(() => makeQuiz());
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [submitToLeaderboard, setSubmitToLeaderboard] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const session = useQuizSession();
+  const navigate = useNavigate();
 
   const validationErrors = useMemo(() => validate(quiz), [quiz]);
 
