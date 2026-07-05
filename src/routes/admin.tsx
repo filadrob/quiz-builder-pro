@@ -180,6 +180,36 @@ function AdminPage() {
     }
   };
 
+  const handleLoadSample = (key: string) => {
+    let factory: null | (() => EditorQuiz) = null;
+    if (key === "shapes") factory = makeShapesQuiz;
+    else if (key === "ffxiv") factory = makeFfxivQuiz;
+    if (!factory) return;
+    const loaded = factory();
+    setQuiz(loaded);
+    setErrors([]);
+    setNotice(`Loaded "${loaded.title}".`);
+  };
+
+  const handleTestPlay = () => {
+    setNotice(null);
+    const errs = validate(quiz);
+    setErrors(errs);
+    if (errs.length) return;
+    // strip editor-only status flag; keep everything else
+    const { status: _status, ...rest } = quiz;
+    void _status;
+    const copy: Quiz = { ...rest, questions: quiz.questions.map((q) => ({ ...q, choices: q.choices.map((c) => ({ ...c })) })) };
+    session.reset();
+    session.setQuiz(copy);
+    session.setSettings({ participantName: "Test Player", isAnonymous: false, perQuestionFeedback: true });
+    session.setPrivateGroupCode(null);
+    session.setTestMode(true);
+    session.setAllowSubmit(submitToLeaderboard);
+    session.setOrder(shuffle(copy.questions).map((q) => q.id));
+    navigate({ to: "/quiz/$quizId/play", params: { quizId: copy.id } });
+  };
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 px-4 pt-4 pb-3">
