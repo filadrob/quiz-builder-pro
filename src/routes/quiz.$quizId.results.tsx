@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResultsBreakdown } from "@/components/quiz/ResultsBreakdown";
+import { ShareResultSection } from "@/components/quiz/ShareResultSection";
 import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { submitScore } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
