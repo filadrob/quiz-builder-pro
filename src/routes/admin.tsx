@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
-import { Home, Plus, Trash2, ArrowUp, ArrowDown, Upload, Download, Image as ImageIcon, AlertTriangle } from "lucide-react";
+import { Home, Plus, Trash2, ArrowUp, ArrowDown, Upload, Download, Image as ImageIcon, AlertTriangle, Play } from "lucide-react";
 import { exportQuiz, importQuiz } from "@/lib/admin-persistence";
+import { useQuizSession } from "@/lib/session-context";
+import { shuffle } from "@/lib/shuffle";
+import { makeShapesQuiz, makeFfxivQuiz } from "@/lib/sample-quizzes";
 import type { Choice, Question, Quiz } from "@/lib/types";
 
 export const Route = createFileRoute("/admin")({
