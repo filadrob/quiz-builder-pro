@@ -13,11 +13,15 @@ interface SessionState {
   orderedQuestionIds: string[];
   answers: AnswerRecord[];
   privateGroupCode: string | null;
+  testMode: boolean;
+  allowSubmit: boolean;
   setQuiz: (q: Quiz) => void;
   setSettings: (s: SessionSettings) => void;
   setOrder: (ids: string[]) => void;
   recordAnswer: (a: AnswerRecord) => void;
   setPrivateGroupCode: (code: string | null) => void;
+  setTestMode: (v: boolean) => void;
+  setAllowSubmit: (v: boolean) => void;
   reset: () => void;
 }
 
@@ -29,6 +33,8 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
   const [orderedQuestionIds, setOrder] = useState<string[]>([]);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
   const [privateGroupCode, setPrivateGroupCode] = useState<string | null>(null);
+  const [testMode, setTestMode] = useState<boolean>(false);
+  const [allowSubmit, setAllowSubmit] = useState<boolean>(true);
 
   const recordAnswer = (a: AnswerRecord) => setAnswers((prev) => [...prev, a]);
   const reset = () => {
@@ -37,6 +43,8 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
     setOrder([]);
     setAnswers([]);
     setPrivateGroupCode(null);
+    setTestMode(false);
+    setAllowSubmit(true);
   };
 
   return (
@@ -47,11 +55,15 @@ export function QuizSessionProvider({ children }: { children: ReactNode }) {
         orderedQuestionIds,
         answers,
         privateGroupCode,
+        testMode,
+        allowSubmit,
         setQuiz,
         setSettings,
         setOrder,
         recordAnswer,
         setPrivateGroupCode,
+        setTestMode,
+        setAllowSubmit,
         reset,
       }}
     >
