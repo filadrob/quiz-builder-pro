@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResultsBreakdown } from "@/components/quiz/ResultsBreakdown";
+import { ShareResultSection } from "@/components/quiz/ShareResultSection";
 import { MakoBar, MakoButton, MakoPanel, ThemeToggle } from "@/components/mako";
 import { submitScore } from "@/lib/sheets";
 import { useQuizSession } from "@/lib/session-context";
@@ -112,6 +113,13 @@ function ResultsPage() {
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
         <ResultsBreakdown quiz={session.quiz} answers={session.answers} />
+
+        <ShareResultSection
+          quiz={session.quiz}
+          answers={session.answers}
+          totalScore={totalScore}
+          totalTime={totalTime}
+        />
 
         <MakoPanel className="flex flex-col gap-4 p-6">
           <div className="flex items-center gap-2">
