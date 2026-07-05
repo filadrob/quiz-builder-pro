@@ -81,6 +81,7 @@ function SetupPage() {
   const handleStart = () => {
     if (!quizQ.data) return;
     const participantName = anonymous ? "Anonymous" : (name.trim() || "Anonymous");
+    session.reset();
     session.setQuiz(quizQ.data);
     session.setSettings({ participantName, isAnonymous: anonymous, perQuestionFeedback: feedback });
     session.setPrivateGroupCode(groupCode || null);
